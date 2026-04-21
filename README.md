@@ -63,7 +63,7 @@ agent-memory-plugin/
 └── skills/
     ├── add-memory/          Saves a memory immediately without confirmation
     ├── verify-memory/       Runs health check and offers bootstrap on failure
-    └── uninstall-memory/    Clean removal of all plugin artifacts
+    └── uninstall-agent-memory/    Clean removal of all plugin artifacts
 ```
 
 ---
