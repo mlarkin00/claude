@@ -97,7 +97,7 @@ No output means the system is healthy. Warning lines prompt you to run the boots
 
 ## Uninstalling
 
-Use the `uninstall-memory` skill in a Claude session, or manually:
+Use the `/uninstall-agent-memory` skill in a Claude session, or manually:
 
 ```bash
 claude plugin uninstall agent-memory

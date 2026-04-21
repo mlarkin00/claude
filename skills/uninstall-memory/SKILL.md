@@ -1,5 +1,5 @@
 ---
-name: uninstall-memory-cc
+name: uninstall-agent-memory
 description: This skill should be used when the user wants to uninstall, remove, or clean up the agent-memory plugin. Handles removal of symlinks, hooks, optional memory data deletion, and plugin de-registration in a safe, step-by-step sequence.
 ---
 
