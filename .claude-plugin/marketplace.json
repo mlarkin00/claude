@@ -16,6 +16,12 @@
       "source": "./kube-agents",
       "description": "stdio MCP server + /kube-agents skill for the kube-agents platform agent (Interactions API path). Live tool-call narration + GCS audit transcripts.",
       "version": "0.4.1"
+    },
+    {
+      "name": "kagent-kube-agents",
+      "source": "./kagent-kube-agents",
+      "description": "stdio MCP server for the kagent platform-agent running on GKE. Communicates via A2A JSON-RPC. Auto-starts kubectl port-forward.",
+      "version": "0.1.0"
     }
   ]
 }
