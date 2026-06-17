@@ -4,12 +4,15 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "README.md"
-      - ".github/**"
+
+# Avoid feedback loop: the bot push below is skipped via the actor guard.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,36 +22,67 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Auto-bump version
+      - name: Bump changed plugins
         id: bump
         run: |
-          VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
-          echo "Current version: $VERSION"
+          set -euo pipefail
 
-          IFS='.' read -r major minor patch <<< "$VERSION"
-          NEW_VERSION="$major.$minor.$((patch + 1))"
-          echo "New version: $NEW_VERSION"
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          MARKETPLACE=".claude-plugin/marketplace.json"
+          PLUGINS="agent-memory kube-agents"
 
-          jq --arg v "$NEW_VERSION" '.version = $v' .claude-plugin/plugin.json > tmp && mv tmp .claude-plugin/plugin.json
-          jq --arg v "$NEW_VERSION" '.plugins[0].version = $v' .claude-plugin/marketplace.json > tmp && mv tmp .claude-plugin/marketplace.json
+          # Files changed in this push (handles first-push / force-push gracefully).
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            CHANGED=$(git diff-tree --no-commit-id --name-only -r "${{ github.sha }}")
+          else
+            CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+          fi
+          echo "Changed files:"; echo "$CHANGED"
 
-      - name: Commit and push
+          TAGS=""
+          for p in $PLUGINS; do
+            # Ignore doc-only and workflow-only changes for this plugin.
+            if ! echo "$CHANGED" | grep -E "^$p/" | grep -vE "^$p/(README\.md|\.github/)" | grep -q .; then
+              echo "No release-relevant changes for $p, skipping."
+              continue
+            fi
+
+            MANIFEST="$p/.claude-plugin/plugin.json"
+            VERSION=$(jq -r '.version' "$MANIFEST")
+            IFS='.' read -r major minor patch <<< "$VERSION"
+            NEW="$major.$minor.$((patch + 1))"
+            echo "$p: $VERSION -> $NEW"
+
+            jq --arg v "$NEW" '.version = $v' "$MANIFEST" > tmp && mv tmp "$MANIFEST"
+            jq --arg n "$p" --arg v "$NEW" \
+              '(.plugins[] | select(.name == $n) | .version) = $v' \
+              "$MARKETPLACE" > tmp && mv tmp "$MARKETPLACE"
+
+            git add "$MANIFEST" "$MARKETPLACE"
+            TAGS="$TAGS $p-v$NEW"
+          done
+
+          echo "tags=$(echo $TAGS | xargs)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit, tag, release
+        if: steps.bump.outputs.tags != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
-          git diff --cached --quiet || git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}"
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          MSG="chore: release$(for t in ${{ steps.bump.outputs.tags }}; do printf ' %s' "$t"; done)"
+          git commit -m "$MSG"
+
+          for t in ${{ steps.bump.outputs.tags }}; do
+            git tag "$t"
+          done
+
           git push origin main
+          git push origin --tags
 
-      - name: Create tag
-        run: |
-          git tag v${{ steps.bump.outputs.version }}
-          git push origin v${{ steps.bump.outputs.version }}
-
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.bump.outputs.version }}
-          name: v${{ steps.bump.outputs.version }}
-          generate_release_notes: true
+          for t in ${{ steps.bump.outputs.tags }}; do
+            gh release create "$t" --title "$t" --generate-notes
+          done

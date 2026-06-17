@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../kube-agents"
+		},
+		{
+			"name": "kube-agents-reframe",
+			"path": "../kube-agents-reframe"
+		},
+		{
+			"name": "kube-agents-eval",
+			"path": "../kube-agents-eval"
+		}
+	],
+	"settings": {}
+}

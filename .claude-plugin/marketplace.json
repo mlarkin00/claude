@@ -1,5 +1,5 @@
 {
-  "name": "agent-memory",
+  "name": "mlarkin00-claude",
   "owner": {
     "name": "Matt Larkin",
     "email": "mlarkin00@gmail.com"
@@ -7,9 +7,15 @@
   "plugins": [
     {
       "name": "agent-memory",
-      "source": "./",
+      "source": "./agent-memory",
       "description": "GitHub-backed persistent memory for Claude Code. Syncs agent memory across machines via a private Git repository.",
       "version": "0.2.16"
+    },
+    {
+      "name": "kube-agents",
+      "source": "./kube-agents",
+      "description": "stdio MCP server + /kube-agents skill for the kube-agents platform agent (Interactions API path). Live tool-call narration + GCS audit transcripts.",
+      "version": "0.4.0"
     }
   ]
 }
