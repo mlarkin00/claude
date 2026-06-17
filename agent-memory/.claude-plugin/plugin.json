@@ -1,6 +1,6 @@
 {
   "name": "agent-memory",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "description": "GitHub-backed persistent memory for Claude Code. Syncs agent memory across machines via a private Git repository.",
   "author": {
     "name": "Matt Larkin",
