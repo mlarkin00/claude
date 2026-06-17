@@ -12,9 +12,9 @@
       "version": "0.2.17"
     },
     {
-      "name": "kube-agents",
-      "source": "./kube-agents",
-      "description": "stdio MCP server + /kube-agents skill for the kube-agents platform agent (Interactions API path). Live tool-call narration + GCS audit transcripts.",
+      "name": "gema-kube-agents",
+      "source": "./gema-kube-agents",
+      "description": "stdio MCP server + /kube-agents skill for the kube-agents platform agent (Gemini Managed Agents Interactions API path). Live tool-call narration + GCS audit transcripts.",
       "version": "0.4.1"
     },
     {

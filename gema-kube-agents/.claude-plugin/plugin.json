@@ -1,6 +1,6 @@
 {
-  "name": "kube-agents",
-  "displayName": "kube-agents Platform Agent",
+  "name": "gema-kube-agents",
+  "displayName": "gema-kube-agents Platform Agent",
   "version": "0.4.1",
   "description": "stdio MCP server for direct access to the kube-agents platform agent via the Gemini Managed Agents Interactions API (alternative to the A2A endpoint). Streams tool-call narration as live progress; archives full transcripts to GCS.",
   "author": {

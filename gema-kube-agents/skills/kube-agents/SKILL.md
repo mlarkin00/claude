@@ -14,7 +14,7 @@ orchestrates GKE clusters, operators, and devteam agents.
 1. Take everything after `/kube-agents` (the skill argument) as the **user
    query**, verbatim. Do not summarize, rephrase, or interpret it.
 2. Call the MCP tool:
-   `mcp__plugin_kube-agents_kube-platform__ask_platform_agent` with
+   `mcp__plugin_gema-kube-agents_kube-platform__ask_platform_agent` with
    `prompt` = the user query.
 3. The tool returns JSON: `{"text": <reply>, "interaction_id": <id>}`. Relay
    `text` to the user **verbatim** — no editing, no added commentary.
