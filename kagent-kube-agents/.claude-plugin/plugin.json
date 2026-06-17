@@ -1,0 +1,17 @@
+{
+  "name": "kagent-kube-agents",
+  "displayName": "kagent Platform Agent",
+  "version": "0.1.0",
+  "description": "stdio MCP server for direct access to the platform-agent running in kagent on GKE. Communicates via A2A JSON-RPC (message/send). Auto-establishes kubectl port-forward if needed.",
+  "author": {
+    "name": "mlarkin"
+  },
+  "keywords": [
+    "mcp",
+    "gke",
+    "kubernetes",
+    "kagent",
+    "platform-agent"
+  ],
+  "mcpServers": "./.mcp.json"
+}
