@@ -2,6 +2,8 @@
 # Pushes local memory changes to GitHub after a Write or Edit tool call.
 # Called by the PostToolUse hook in hooks/hooks.json.
 # Only stages .md files so plugin/script changes don't leak into memory commits.
+# The push runs over HTTPS authenticated by the gh CLI token (`gh auth setup-git`,
+# configured during bootstrap) — no SSH key required.
 
 set -euo pipefail
 

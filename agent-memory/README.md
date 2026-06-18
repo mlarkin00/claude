@@ -16,6 +16,16 @@ Claude's memory system reads from and writes to `~/.claude/memory/` as usual —
 
 ---
 
+## Prerequisites
+
+The [GitHub CLI](https://cli.github.com) (`gh`) must be installed and authenticated. Bootstrap uses `gh` for all GitHub interaction — auth check, repo clone/create, and configuring git to push over HTTPS with the gh token (no SSH key required):
+
+```bash
+gh auth login
+```
+
+---
+
 ## Installation
 
 ### 1. Add the marketplace

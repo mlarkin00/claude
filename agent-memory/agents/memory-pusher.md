@@ -29,11 +29,16 @@ tools:
 Force-push all staged memory changes to GitHub:
 
 ```bash
-cd ~/.agents/agent-memory \
-  && git add memory/ \
-  && git diff --cached --quiet \
-  || git commit -m "memory: manual sync @ $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  && git push origin main
+cd ~/.agents/agent-memory
+git add -- *.md 2>/dev/null || true
+if git diff --cached --quiet; then
+  echo "Nothing to push — memory already in sync."
+else
+  git commit -m "memory: manual sync @ $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  git push origin main
+fi
 ```
+
+The push runs over HTTPS authenticated by the gh CLI token (configured during bootstrap) — no SSH key required.
 
 Report success ("Memory pushed to GitHub.") or explain any failure clearly.

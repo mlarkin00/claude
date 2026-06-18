@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Pulls the latest memory state from GitHub. Remote always wins.
 # Called by the SessionStart hook wired into ~/.claude/settings.json by bootstrap-memory.
+# The fetch runs over HTTPS authenticated by the gh CLI token (`gh auth setup-git`,
+# configured during bootstrap) — no SSH key required.
 
 set -euo pipefail
 

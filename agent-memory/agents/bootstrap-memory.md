@@ -40,13 +40,17 @@ tools:
 
 You are bootstrapping the agent memory system for Claude Code. Every step is idempotent — check before creating or modifying anything. Work through each step in order and print a one-line status (✓ OK / ✓ CREATED / → SKIPPED / ✗ FAILED) for each.
 
-## Step 1: Verify SSH access to GitHub
+## Step 1: Verify GitHub CLI auth
 
 ```bash
-ssh -T git@github.com 2>&1 | grep -E "Hi|successfully authenticated"
+gh auth status && gh auth setup-git
 ```
 
-If this fails, tell the user to configure a GitHub SSH key before continuing. Do not proceed.
+If `gh auth status` fails, tell the user to run `gh auth login` before continuing. Do not proceed.
+If `gh` is not installed, tell the user to install it (https://cli.github.com) and stop.
+
+`gh auth setup-git` configures git to authenticate to GitHub over HTTPS using the gh token, so the
+`git push`/`git fetch` calls in the sync hooks work without an SSH key.
 
 ## Step 2: Clone the repo
 
@@ -54,7 +58,15 @@ Check if `~/.agents/agent-memory/.git` exists. If not:
 
 ```bash
 mkdir -p ~/.agents
-git clone git@github.com:mlarkin00/agent-memory.git ~/.agents/agent-memory
+gh repo clone mlarkin00/agent-memory ~/.agents/agent-memory
+```
+
+If the repo does not yet exist on GitHub, create it first, then clone:
+
+```bash
+gh repo view mlarkin00/agent-memory >/dev/null 2>&1 \
+  || gh repo create mlarkin00/agent-memory --private
+gh repo clone mlarkin00/agent-memory ~/.agents/agent-memory
 ```
 
 If already cloned, print `→ SKIPPED: repo already present`.
@@ -97,7 +109,7 @@ git diff --cached --quiet \
 git push origin main
 ```
 
-On push failure, print `✗ FAILED: push failed — check SSH key and network` and stop. Do not proceed to hook registration.
+On push failure, print `✗ FAILED: push failed — run \`gh auth status\` and check network` and stop. Do not proceed to hook registration.
 
 ## Step 7: Register hooks in ~/.claude/settings.json
 
