@@ -6,7 +6,7 @@ def get_plugin_config():
     Reads .claude-plugin/plugin.json from the plugin root and returns the config block.
     Falls back to environment variables if config is missing.
     """
-    plugin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     plugin_json_path = os.path.join(plugin_dir, ".claude-plugin", "plugin.json")
 
     config = {}
