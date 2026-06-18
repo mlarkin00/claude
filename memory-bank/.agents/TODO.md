@@ -6,7 +6,6 @@
 
 ## P1 — Important / Unblocking
 
-- [ ] **[P1]** Port tests from `~/agent-skills/plugins/memory-bank/tests/` — adapt for Claude Code transcript format (`role: user/assistant`) and `.claude-plugin/plugin.json` config path.
 - [ ] **[P1]** Confirm `injectSteps`/`ephemeralMessage` from `SessionStart` hook injects memories into Claude Code context — `load_context.py` produces valid JSON but end-to-end injection in a live session has not been manually verified yet.
 - [ ] **[P1]** Confirm `Stop` hook receives `transcriptPath` in Claude Code — verify `save_context.py` actually processes a real transcript before relying on session-end consolidation.
 

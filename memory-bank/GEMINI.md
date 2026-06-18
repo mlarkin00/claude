@@ -16,7 +16,7 @@ echo '{}' | python3 scripts/load_context.py          # test session-start inject
 python3 scripts/list_memories.py                      # list current-scope memories
 python3 scripts/add_memory.py "fact" --scope global   # add a memory
 python3 scripts/sidecar_consolidate.py --force        # force daily consolidation
-cd tests && python3 -m pytest -v                      # run tests
+python3 -m unittest discover -s tests -v              # run tests (stdlib unittest, no pytest required)
 ```
 
 ## Style & Conventions
@@ -31,6 +31,6 @@ cd tests && python3 -m pytest -v                      # run tests
 - `load_context.py` → `{"injectSteps": [{"ephemeralMessage": "<long_term_memories>..."}]}`.
 - `save_context.py` → Claude Code transcript format: `role: user/assistant`, content as string or list.
 - `sidecar_consolidate.py` → ≤once/24h, walks `~/.claude/projects/**/*.jsonl`.
-- `config.py` → reads `../.claude-plugin/plugin.json` relative to `scripts/`.
+- `config.py` → reads `../.claude-plugin/plugin.json` via `os.path.realpath(__file__)` — MUST be `realpath`, not `abspath`; symlinks break `abspath`.
 - Hook commands use `$CLAUDE_PLUGIN_ROOT`.
 - Skills call scripts via `~/.claude/scripts/memory-bank/`.

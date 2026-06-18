@@ -16,7 +16,7 @@ echo '{}' | python3 scripts/load_context.py          # test session-start inject
 python3 scripts/list_memories.py                      # list current-scope memories
 python3 scripts/add_memory.py "fact" --scope global   # add a memory
 python3 scripts/sidecar_consolidate.py --force        # force daily consolidation
-cd tests && python3 -m pytest -v                      # run tests
+python3 -m unittest discover -s tests -v              # run tests (stdlib unittest, no pytest required)
 ```
 
 ## Style & Conventions
@@ -33,4 +33,4 @@ cd tests && python3 -m pytest -v                      # run tests
 - `sidecar_consolidate.py` runs ≤once/24h; walks `~/.claude/projects/**/*.jsonl`.
 - Skills call scripts via `~/.claude/scripts/memory-bank/<script>.py` (symlinked by `install-symlinks.sh`).
 - Hook commands use `$CLAUDE_PLUGIN_ROOT` for script paths.
-- `config.py` resolves the plugin manifest at `../.claude-plugin/plugin.json` relative to `scripts/`.
+- `config.py` resolves the plugin manifest at `../.claude-plugin/plugin.json` using `os.path.realpath(__file__)` — MUST stay `realpath`, not `abspath`; `abspath` breaks when scripts are invoked via `~/.claude/scripts/memory-bank/` symlinks.
