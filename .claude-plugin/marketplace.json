@@ -9,7 +9,7 @@
       "name": "agent-memory",
       "source": "./agent-memory",
       "description": "GitHub-backed persistent memory for Claude Code. Syncs agent memory across machines via a private Git repository.",
-      "version": "0.2.17"
+      "version": "0.3.1"
     },
     {
       "name": "gema-kube-agents",
