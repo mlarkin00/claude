@@ -30,6 +30,7 @@ link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-list/SKILL.md"               "$SK
 link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-update/SKILL.md"             "$SKILLS_DIR/memories-update.md"
 link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-delete/SKILL.md"             "$SKILLS_DIR/memories-delete.md"
 link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-set-project-scope/SKILL.md"  "$SKILLS_DIR/memories-set-project-scope.md"
+link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-curate/SKILL.md"             "$SKILLS_DIR/memories-curate.md"
 
 # Python scripts (stable paths for agent skill calls)
 for script in add_memory list_memories query_memories update_memory delete_memory \
