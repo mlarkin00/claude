@@ -50,7 +50,7 @@ python3 -m unittest discover -s tests -v
 - Hooks: `SessionStart` → `install-symlinks.sh` then `load_context.py`; `Stop` → `save_context.py` then `sidecar_consolidate.py`.
 - `load_context.py` outputs `{"injectSteps": [{"ephemeralMessage": "<long_term_memories>..."}]}` — Claude Code processes this to inject facts into the session context.
 - `save_context.py` reads Claude Code transcript format: `{"role": "user"|"assistant", "content": string|[{type,text}]}`.
-- `sidecar_consolidate.py` runs at most once per 24 hours (state in `~/.cache/memory-bank/.sidecar_state.json`); walks `~/.claude/projects/**/*.jsonl` for bulk consolidation.
+- `sidecar_consolidate.py` runs at most once per 24 hours (`--force` bypasses; state in `~/.cache/memory-bank/.sidecar_state.json`). Two phases: (1) semantic curation — fetches the user's memories, calls Gemini 3.5 Flash (`https://aiplatform.googleapis.com/v1/.../locations/global/...`) to semantically deduplicate (scope-priority: global wins) and rewrite facts for agent-readability; (2) bulk consolidation — walks `~/.claude/projects/**/*.jsonl` and sends all turns to `memories:generate`.
 - `config.py` reads `.claude-plugin/plugin.json` first, falls back to env vars. MUST use `os.path.realpath(__file__)` (not `abspath`) — symlinks via `~/.claude/scripts/memory-bank/` will return empty config if `abspath` is used.
 - Skill scripts are symlinked to `~/.claude/scripts/memory-bank/` by `install-symlinks.sh`; skills call them via `~/.claude/scripts/memory-bank/<script>.py`.
 - Plugin MUST be registered in root `marketplace.json` before release.

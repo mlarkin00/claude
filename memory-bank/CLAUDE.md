@@ -30,7 +30,7 @@ python3 -m unittest discover -s tests -v              # run tests (stdlib unitte
 
 - `load_context.py` outputs `{"injectSteps": [{"ephemeralMessage": "<long_term_memories>..."}]}`.
 - `save_context.py` handles Claude Code transcript fields: `role: user/assistant`, content as string or list of `{type, text}` blocks.
-- `sidecar_consolidate.py` runs ≤once/24h; walks `~/.claude/projects/**/*.jsonl`.
+- `sidecar_consolidate.py` runs ≤once/24h (`--force` bypasses). Two phases: (1) semantic curation — lists user's memories, calls Gemini 3.5 Flash via `https://aiplatform.googleapis.com/v1/.../locations/global/...` to deduplicate and rewrite facts; (2) bulk consolidation — walks `~/.claude/projects/**/*.jsonl` and sends to `memories:generate`.
 - Skills call scripts via `~/.claude/scripts/memory-bank/<script>.py` (symlinked by `install-symlinks.sh`).
 - Hook commands use `$CLAUDE_PLUGIN_ROOT` for script paths.
 - `config.py` resolves the plugin manifest at `../.claude-plugin/plugin.json` using `os.path.realpath(__file__)` — MUST stay `realpath`, not `abspath`; `abspath` breaks when scripts are invoked via `~/.claude/scripts/memory-bank/` symlinks.

@@ -80,13 +80,13 @@ class TestSidecarConsolidate(unittest.TestCase):
     @patch('sidecar_consolidate.get_plugin_config')
     @patch('sidecar_consolidate.should_run_sidecar')
     @patch('sidecar_consolidate.aggregate_transcripts')
-    @patch('sidecar_consolidate.deduplicate_memories')
+    @patch('sidecar_consolidate.curate_memories')
     @patch('sidecar_consolidate.resolve_user_id')
     @patch('sidecar_consolidate.save_state_timestamp')
     @patch('urllib.request.urlopen')
     def test_run_sends_api_request_and_updates_state(
         self, mock_urlopen, mock_save_state, mock_resolve_user,
-        mock_dedup, mock_aggregate, mock_should_run, mock_config
+        mock_curate, mock_aggregate, mock_should_run, mock_config
     ):
         import sidecar_consolidate
         mock_config.return_value = {
@@ -105,6 +105,7 @@ class TestSidecarConsolidate(unittest.TestCase):
         with patch('sys.stdin', io.StringIO(json.dumps({}))):
             sidecar_consolidate.run()
 
+        self.assertTrue(mock_curate.called)
         self.assertTrue(mock_urlopen.called)
         req = mock_urlopen.call_args[0][0]
         self.assertEqual(req.method, 'POST')
@@ -120,29 +121,108 @@ class TestSidecarConsolidate(unittest.TestCase):
         self.assertTrue(mock_save_state.called)
 
     @patch('sidecar_consolidate.list_memories')
+    @patch('sidecar_consolidate.call_gemini_for_curation')
     @patch('sidecar_consolidate.delete_memory')
-    def test_deduplicate_keeps_oldest_deletes_newer(self, mock_delete, mock_list):
+    @patch('sidecar_consolidate.update_memory')
+    def test_curate_memories_applies_deletes_and_updates(
+        self, mock_update, mock_delete, mock_gemini, mock_list
+    ):
         import sidecar_consolidate
+
+        user_hash = "abc123"
         mock_list.return_value = [
-            {"name": ".../m1", "createTime": "2026-06-10T20:11:00Z",
-             "scope": {"user": "u", "project": "p"}, "fact": "Duplicate Fact"},
-            {"name": ".../m2", "createTime": "2026-06-10T20:12:00Z",
-             "scope": {"user": "u", "project": "p"}, "fact": "duplicate fact  "},
-            {"name": ".../m3", "createTime": "2026-06-10T20:10:00Z",  # oldest
-             "scope": {"user": "u", "project": "p"}, "fact": "DUPLICATE FACT"},
-            {"name": ".../m4", "createTime": "2026-06-10T20:15:00Z",
-             "scope": {"user": "u", "project": "p"}, "fact": "Unique Fact"},
+            {"name": ".../m1", "scope": {"user": user_hash, "project": "global"}, "fact": "Use dark theme"},
+            {"name": ".../m2", "scope": {"user": user_hash, "project": "global"}, "fact": "user likes dark theme"},
+            {"name": ".../m3", "scope": {"user": user_hash, "project": "global"}, "fact": "Pods capped at 5"},
+            {"name": ".../other", "scope": {"user": "different_user", "project": "global"}, "fact": "irrelevant"},
         ]
+        mock_gemini.return_value = (
+            ["m2"],
+            [{"id": "m3", "new_fact": "Always cap pods at 5"}]
+        )
+        mock_delete.return_value = True
+        mock_update.return_value = True
+
+        sidecar_consolidate.curate_memories("my-project", "us-central1", "123", user_hash)
+
+        # Only current user's memories passed to Gemini
+        passed_memories = mock_gemini.call_args[0][0]
+        self.assertEqual(len(passed_memories), 3)
+        self.assertFalse(any(m['scope']['user'] == 'different_user' for m in passed_memories))
+
+        mock_delete.assert_called_once_with("my-project", "us-central1", "123", "m2")
+        mock_update.assert_called_once_with("my-project", "us-central1", "123", "m3", "Always cap pods at 5")
+
+    @patch('sidecar_consolidate.list_memories')
+    @patch('sidecar_consolidate.call_gemini_for_curation')
+    @patch('sidecar_consolidate.delete_memory')
+    @patch('sidecar_consolidate.update_memory')
+    def test_curate_memories_skips_update_for_deleted_id(
+        self, mock_update, mock_delete, mock_gemini, mock_list
+    ):
+        import sidecar_consolidate
+
+        user_hash = "abc123"
+        mock_list.return_value = [
+            {"name": ".../m1", "scope": {"user": user_hash, "project": "global"}, "fact": "fact A"},
+        ]
+        # Gemini tries to both delete and update the same ID
+        mock_gemini.return_value = (["m1"], [{"id": "m1", "new_fact": "rewritten A"}])
         mock_delete.return_value = True
 
-        sidecar_consolidate.deduplicate_memories("my-project", "us-central1", "123")
+        sidecar_consolidate.curate_memories("my-project", "us-central1", "123", user_hash)
 
-        self.assertEqual(mock_delete.call_count, 2)
-        deleted_ids = [c[0][3] for c in mock_delete.call_args_list]
-        self.assertIn("m1", deleted_ids)
-        self.assertIn("m2", deleted_ids)
-        self.assertNotIn("m3", deleted_ids)
-        self.assertNotIn("m4", deleted_ids)
+        mock_delete.assert_called_once()
+        mock_update.assert_not_called()
+
+    @patch('urllib.request.urlopen')
+    @patch('sidecar_consolidate.get_access_token')
+    def test_call_gemini_for_curation_parses_response(self, mock_token, mock_urlopen):
+        import sidecar_consolidate
+        mock_token.return_value = "tok"
+
+        gemini_result = {"to_delete": ["m1"], "to_update": [{"id": "m2", "new_fact": "Always use tabs"}]}
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps({
+            "candidates": [{"content": {"parts": [{"text": json.dumps(gemini_result)}]}}]
+        }).encode('utf-8')
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+
+        memories = [
+            {"name": ".../m1", "scope": {"user": "u", "project": "global"}, "fact": "use spaces"},
+            {"name": ".../m2", "scope": {"user": "u", "project": "global"}, "fact": "user prefers tabs"},
+        ]
+        to_delete, to_update = sidecar_consolidate.call_gemini_for_curation(memories, "proj", "us-west1")
+
+        self.assertEqual(to_delete, ["m1"])
+        self.assertEqual(len(to_update), 1)
+        self.assertEqual(to_update[0]["id"], "m2")
+        self.assertEqual(to_update[0]["new_fact"], "Always use tabs")
+
+        req = mock_urlopen.call_args[0][0]
+        self.assertIn("gemini-3.5-flash", req.full_url)
+        self.assertIn("locations/global", req.full_url)
+        self.assertIn("generateContent", req.full_url)
+
+    @patch('urllib.request.urlopen')
+    @patch('sidecar_consolidate.get_access_token')
+    def test_call_gemini_for_curation_returns_empty_on_failure(self, mock_token, mock_urlopen):
+        import sidecar_consolidate
+        mock_token.return_value = "tok"
+        mock_urlopen.side_effect = Exception("network error")
+
+        to_delete, to_update = sidecar_consolidate.call_gemini_for_curation(
+            [{"name": ".../m1", "scope": {"user": "u", "project": "global"}, "fact": "something"}],
+            "proj", "us-west1"
+        )
+        self.assertEqual(to_delete, [])
+        self.assertEqual(to_update, [])
+
+    def test_call_gemini_for_curation_returns_empty_for_no_memories(self):
+        import sidecar_consolidate
+        to_delete, to_update = sidecar_consolidate.call_gemini_for_curation([], "proj", "us-west1")
+        self.assertEqual(to_delete, [])
+        self.assertEqual(to_update, [])
 
 if __name__ == '__main__':
     unittest.main()
