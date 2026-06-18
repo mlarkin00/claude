@@ -28,7 +28,7 @@ jobs:
           set -euo pipefail
 
           MARKETPLACE=".claude-plugin/marketplace.json"
-          PLUGINS="agent-memory kube-agents"
+          PLUGINS="agent-memory gema-kube-agents kagent-kube-agents memory-bank"
 
           # Files changed in this push (handles first-push / force-push gracefully).
           BEFORE="${{ github.event.before }}"
