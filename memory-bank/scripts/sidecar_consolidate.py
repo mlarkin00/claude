@@ -249,10 +249,22 @@ def curate_memories(project, location, engine_id, user_hash):
     if deleted or updated:
         sys.stderr.write(f"[memory-bank] sidecar: curation complete — {deleted} deleted, {updated} rewritten.\n")
 
+# --- graduation phase ---
+
+def run_graduation(force=False):
+    try:
+        import graduate_memories
+        graduate_memories.run(dry_run=False, force=force)
+    except Exception as e:
+        sys.stderr.write(f"[memory-bank] sidecar: graduation phase error: {e}\n")
+
+
 # --- main ---
 
 def run():
-    force = "--force" in sys.argv
+    force          = "--force" in sys.argv
+    force_graduate = "--force-graduate" in sys.argv
+
     if not force and not should_run_sidecar():
         return
 
@@ -271,6 +283,8 @@ def run():
         if success:
             save_state_timestamp()
             sys.stderr.write("[memory-bank] sidecar: consolidation complete.\n")
+
+    run_graduation(force=force_graduate)
 
 if __name__ == '__main__':
     run()

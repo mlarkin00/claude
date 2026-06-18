@@ -34,8 +34,9 @@ link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-curate/SKILL.md"             "$SK
 
 # Python scripts (stable paths for agent skill calls)
 for script in add_memory list_memories query_memories update_memory delete_memory \
-              set_project_scope import_cc_memories; do
+              set_project_scope import_cc_memories graduate_memories; do
   link_file "$CLAUDE_PLUGIN_ROOT/scripts/${script}.py" "$MB_SCRIPTS_DIR/${script}.py"
 done
-link_file "$CLAUDE_PLUGIN_ROOT/scripts/config.py"        "$MB_SCRIPTS_DIR/config.py"
-link_file "$CLAUDE_PLUGIN_ROOT/scripts/resolve_scope.py" "$MB_SCRIPTS_DIR/resolve_scope.py"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/config.py"           "$MB_SCRIPTS_DIR/config.py"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/resolve_scope.py"    "$MB_SCRIPTS_DIR/resolve_scope.py"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/resolve_remember.py" "$MB_SCRIPTS_DIR/resolve_remember.py"
