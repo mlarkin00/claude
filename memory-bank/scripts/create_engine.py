@@ -42,6 +42,13 @@ def build_payload(display_name, description, project, location):
         }
     }
 
+def parse_operation_response(data):
+    done = data.get("done", False)
+    if not done:
+        return False, None
+    engine_id = data.get("response", {}).get("name", "").split("/")[-1] or None
+    return True, engine_id
+
 def get_access_token():
     p = subprocess.run(['gcloud', 'auth', 'application-default', 'print-access-token'],
                        capture_output=True, text=True, check=True)
