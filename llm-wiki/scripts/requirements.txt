@@ -1,0 +1,11 @@
+# Core (always required)
+pyyaml>=6.0
+
+# Web ingest (required for okf_fetch.py)
+markdownify>=0.12
+
+# BigQuery adapter (required for okf_bq.py — optional, BigQuery only)
+# google-cloud-bigquery>=3.0
+
+# Index LLM descriptions (optional, for okf_index.py --llm)
+# google-genai>=1.0

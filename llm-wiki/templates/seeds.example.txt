@@ -1,0 +1,16 @@
+# OKF Web Ingest Seed URLs
+# One URL per line. Lines starting with # are comments.
+# Pass this file to /llm-wiki:ingest or directly to okf_fetch.py.
+#
+# Example usage:
+#   /llm-wiki:ingest seeds.txt
+#   python3 <plugin_root>/scripts/okf_fetch.py <url> --state /tmp/state.json --seed
+#
+# Tips:
+#   - Use official documentation pages, not tutorials or overviews.
+#   - Schema reference pages (not "Getting started") work best.
+#   - One seed per documentation root; the crawler follows links from there.
+#   - Set --max-pages to control budget (default: 100).
+
+# https://example.com/docs/schema-reference
+# https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types
