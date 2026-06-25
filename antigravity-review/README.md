@@ -9,8 +9,9 @@ second-opinion review from a different model.
 
 | Component | Name | Purpose |
 | --- | --- | --- |
+| Skill | `agy-review` | Gathers the current artifacts + context and dispatches the agent. Auto-activates on "review my changes with antigravity" and invocable as `/agy-review`. |
 | Agent | `agy-code-reviewer` | Resolves the diff, runs the review via `agy`, and relays Antigravity's findings with a short synthesis on top. |
-| Command | `/agy-review` | One-line way to trigger the agent on the current changes. |
+| Command | `/agy-review` | Thin slash-command entry point; loads the `agy-review` skill. |
 | Script | `scripts/agy-review.sh` | The workhorse: git diff → review brief → `agy --print`. Usable standalone. |
 
 ## Requirements
