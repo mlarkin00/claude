@@ -73,10 +73,14 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '(detached)')
 detect_base() {
   local b
   for b in main master; do
-    if git show-ref --verify --quiet "refs/heads/$b"; then echo "$b"; return; fi
+    # Don't use the current branch as its own base (would yield an empty diff).
+    if [ "$BRANCH" != "$b" ] && git show-ref --verify --quiet "refs/heads/$b"; then
+      echo "$b"; return
+    fi
   done
+  # Keep the origin/ prefix: the remote-tracking ref resolves even with no local branch.
   if b=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null); then
-    echo "${b#origin/}"; return
+    [ "$b" != "origin/$BRANCH" ] && { echo "$b"; return; }
   fi
   echo "HEAD~1"
 }
@@ -119,7 +123,7 @@ case "$TARGET" in
   *)
     RANGE_DESC="commit $TARGET"
     DIFF=$(git show --patch "$TARGET")
-    STAT=$(git show --stat --oneline "$TARGET" | head -n 1)
+    STAT=$(git show --stat --format="" "$TARGET")
     LOG=$(git log --oneline -1 "$TARGET")
     ;;
 esac
@@ -198,4 +202,10 @@ AGY_ARGS+=(--print "$(cat "$BRIEF")")
 echo "==> Antigravity review — $RANGE_DESC" >&2
 echo >&2
 
-exec agy "${AGY_ARGS[@]}"
+# Don't exec: that would replace the shell and skip the EXIT trap, leaking $BRIEF.
+# Run agy normally so the trap cleans up, capturing and propagating its exit status.
+set +e
+agy "${AGY_ARGS[@]}"
+status=$?
+set -e
+exit "$status"

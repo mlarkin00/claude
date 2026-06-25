@@ -39,7 +39,7 @@
       "name": "antigravity-review",
       "source": "./antigravity-review",
       "description": "Code review via Google Antigravity. An agy-code-reviewer subagent and /agy-review command assemble a git diff plus context into a review brief and send it to the Antigravity CLI (agy --print) for a second-opinion review.",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }
