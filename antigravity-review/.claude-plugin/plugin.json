@@ -1,0 +1,16 @@
+{
+  "name": "antigravity-review",
+  "version": "0.1.0",
+  "description": "Code review via Google Antigravity. Ships an agy-code-reviewer subagent and /agy-review command that assemble a git diff plus context into a review brief and send it to the Antigravity CLI (agy --print) for feedback.",
+  "author": {
+    "name": "Matt Larkin",
+    "email": "mlarkin00@gmail.com"
+  },
+  "keywords": [
+    "code-review",
+    "antigravity",
+    "agy",
+    "gemini",
+    "review"
+  ]
+}
