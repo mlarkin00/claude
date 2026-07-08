@@ -32,8 +32,8 @@ class TestSaveContext(unittest.TestCase):
         self.assertTrue(mock_post.called)
         events = mock_post.call_args[0][5]
         self.assertEqual(len(events), 2)
-        self.assertEqual(events[0]["role"], "USER")
-        self.assertEqual(events[1]["role"], "AGENT")
+        self.assertEqual(events[0]["content"]["role"], "user")
+        self.assertEqual(events[1]["content"]["role"], "model")
 
     @patch('save_context.send_generation_request')
     def test_parses_content_as_list_of_blocks(self, mock_post):
@@ -55,7 +55,7 @@ class TestSaveContext(unittest.TestCase):
         self.assertTrue(mock_post.called)
         events = mock_post.call_args[0][5]
         self.assertEqual(len(events), 2)
-        self.assertEqual(events[0]["content"], "Use TypeScript.")
+        self.assertEqual(events[0]["content"]["parts"][0]["text"], "Use TypeScript.")
 
     @patch('save_context.send_generation_request')
     def test_skips_corrupted_lines(self, mock_post):

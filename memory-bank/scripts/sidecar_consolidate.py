@@ -71,10 +71,12 @@ def aggregate_transcripts(projects_dir):
                         msg = step if 'role' in step else step.get('message', {})
                         role = msg.get('role', '')
                         content = extract_text(msg.get('content', ''))
+                        # Content-shaped events for directContentsSource.events:
+                        # {"content": {"role": "user"|"model", "parts": [{"text": ...}]}}.
                         if role == 'user' and content:
-                            events.append({"role": "USER", "content": content})
+                            events.append({"content": {"role": "user", "parts": [{"text": content}]}})
                         elif role == 'assistant' and content:
-                            events.append({"role": "AGENT", "content": content})
+                            events.append({"content": {"role": "model", "parts": [{"text": content}]}})
             except Exception:
                 pass
     return events

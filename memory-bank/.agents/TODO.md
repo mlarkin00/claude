@@ -6,7 +6,7 @@
 
 ## P1 — Important / Unblocking
 
-- [ ] **[P1]** Fix broken `memories:generate` event shape — session-end save + consolidation are silently failing. `save_context.py` and `sidecar_consolidate.py` send `directContentsSource` events as `{"role":"USER","content":…}`, which the Memory Bank API REJECTS with HTTP 400 ("Unknown name 'role' at 'direct_contents_source.events[0]'"). Per the official docs, events must be Content-shaped: `{"content":{"role":"user"|"model","parts":[{"text":…}]}}` (role `"user"`/`"model"`, not `"USER"`/`"AGENT"`). Fix `send_generation_request()` in both files. Validated live against the engine: old shape → 400, Content shape → 200. (Discovered while porting this plugin into `local-minions/minion-memory`, where the corrected shape is already in use.)
+- [x] **[P1]** Fix broken `memories:generate` event shape — session-end save + consolidation were silently failing. `save_context.py` and `sidecar_consolidate.py` sent `directContentsSource` events as `{"role":"USER","content":…}`, which the Memory Bank API REJECTS with HTTP 400 ("Unknown name 'role' at 'direct_contents_source.events[0]'"). Events must be Content-shaped: `{"content":{"role":"user"|"model","parts":[{"text":…}]}}` (role `"user"`/`"model"`, not `"USER"`/`"AGENT"`). *(2026-07-08: fixed the event-building loops in both `save_context.py` and `sidecar_consolidate.py` to emit the Content shape; updated `test_save_context.py` + `test_sidecar_consolidate.py` assertions; full suite green (30 tests). Shape matches the live-validated reference in `local-minions/minion-memory`.)*
 
 ## P2 — Nice-to-Have
 

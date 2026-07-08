@@ -72,10 +72,10 @@ class TestSidecarConsolidate(unittest.TestCase):
         events = sidecar_consolidate.aggregate_transcripts("/projects")
 
         self.assertEqual(len(events), 4)  # corrupted line skipped
-        self.assertEqual(events[0]["role"], "USER")
-        self.assertEqual(events[1]["role"], "AGENT")
-        self.assertEqual(events[2]["role"], "USER")
-        self.assertEqual(events[3]["role"], "AGENT")
+        self.assertEqual(events[0]["content"]["role"], "user")
+        self.assertEqual(events[1]["content"]["role"], "model")
+        self.assertEqual(events[2]["content"]["role"], "user")
+        self.assertEqual(events[3]["content"]["role"], "model")
 
     @patch('sidecar_consolidate.get_plugin_config')
     @patch('sidecar_consolidate.should_run_sidecar')
@@ -95,7 +95,9 @@ class TestSidecarConsolidate(unittest.TestCase):
             "reasoning_engine_id": "123"
         }
         mock_should_run.return_value = True
-        mock_aggregate.return_value = [{"role": "USER", "content": "I want TailwindCSS."}]
+        mock_aggregate.return_value = [
+            {"content": {"role": "user", "parts": [{"text": "I want TailwindCSS."}]}}
+        ]
         mock_resolve_user.return_value = "user_hash_123"
 
         mock_response = MagicMock()
@@ -117,7 +119,7 @@ class TestSidecarConsolidate(unittest.TestCase):
         data = json.loads(req.data.decode('utf-8'))
         self.assertEqual(data["scope"]["user"], "user_hash_123")
         self.assertEqual(data["scope"]["project"], "global")
-        self.assertEqual(data["directContentsSource"]["events"][0]["role"], "USER")
+        self.assertEqual(data["directContentsSource"]["events"][0]["content"]["role"], "user")
         self.assertTrue(mock_save_state.called)
 
     @patch('sidecar_consolidate.list_memories')

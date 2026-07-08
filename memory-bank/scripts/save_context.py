@@ -78,10 +78,12 @@ def run():
                 role = msg.get('role', '')
                 content = extract_text(msg.get('content', ''))
 
+                # Memory Bank's directContentsSource.events wants Content-shaped
+                # events: {"content": {"role": "user"|"model", "parts": [{"text": ...}]}}.
                 if role == 'user' and content:
-                    events.append({"role": "USER", "content": content})
+                    events.append({"content": {"role": "user", "parts": [{"text": content}]}})
                 elif role == 'assistant' and content:
-                    events.append({"role": "AGENT", "content": content})
+                    events.append({"content": {"role": "model", "parts": [{"text": content}]}})
     except Exception:
         return
 
