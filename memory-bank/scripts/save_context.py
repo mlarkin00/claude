@@ -97,5 +97,15 @@ def run():
     send_generation_request(cfg["project"], cfg["location"], cfg["reasoning_engine_id"],
                             user_hash, project_hash, events)
 
+    # Fail-open nudge: ask the deployed memory-minion agent to curate the new facts.
+    # Best-effort and non-blocking — if it can't fire, the agent's schedule covers it.
+    try:
+        import subprocess
+        nudge = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'nudge_minion.py')
+        subprocess.Popen([sys.executable, nudge],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
 if __name__ == '__main__':
     run()

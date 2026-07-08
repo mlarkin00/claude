@@ -1,7 +1,7 @@
 # Memories Curate Agent — Design Spec
 
 **Date:** 2026-06-18
-**Status:** Approved
+**Status:** SUPERSEDED (2026-07-08) — the client-side `memories-curate` subagent described here has been retired. Curation now runs server-side on the deployed **memory-minion** agent (GCP Agent Runtime; see the `agentic-minions` repo). This plugin only nudges it via `nudge_minion.py`. Kept for historical context.
 
 ## Overview
 

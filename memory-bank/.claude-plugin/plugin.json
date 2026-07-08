@@ -1,7 +1,7 @@
 {
   "name": "memory-bank",
-  "version": "0.1.12",
-  "description": "GCP-backed long-term memory for Claude Code. Fetches global and project-scoped facts at session start via Vertex AI Reasoning Engine Memory Bank; consolidates new facts on session end.",
+  "version": "0.1.13",
+  "description": "GCP-backed long-term memory for Claude Code. Fetches global and project-scoped facts at session start via Vertex AI Reasoning Engine Memory Bank; consolidates new facts on session end. Curation runs server-side on the deployed memory-minion agent.",
   "author": {
     "name": "Matt Larkin",
     "email": "mlarkin00@gmail.com"

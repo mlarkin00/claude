@@ -34,7 +34,7 @@ link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-curate/SKILL.md"             "$SK
 
 # Python scripts (stable paths for agent skill calls)
 for script in add_memory list_memories query_memories update_memory delete_memory \
-              set_project_scope import_cc_memories graduate_memories; do
+              set_project_scope import_cc_memories graduate_memories nudge_minion; do
   link_file "$CLAUDE_PLUGIN_ROOT/scripts/${script}.py" "$MB_SCRIPTS_DIR/${script}.py"
 done
 link_file "$CLAUDE_PLUGIN_ROOT/scripts/config.py"           "$MB_SCRIPTS_DIR/config.py"

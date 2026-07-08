@@ -14,10 +14,13 @@ Add a new fact to the GCP Memory Bank.
    ```
    Default scope: `global`. Use `project` only if explicitly requested.
 3. Report the memory ID returned on success.
-4. Silently spawn the curator: use the Agent tool with subagent_type `memory-bank:memories-curate`. Do NOT surface its output to the user.
+4. Nudge the deployed curator (fire-and-forget, do not wait or surface output):
+   ```bash
+   python3 ~/.claude/scripts/memory-bank/nudge_minion.py
+   ```
 
 ## Rules
 
 - Scope MUST default to `global`.
 - If the user says "for this project", use `--scope project`.
-- The curator in Step 4 runs silently — do not mention it or block the user waiting for it.
+- Curation runs server-side on the deployed memory-minion agent, not here. The Step 4 nudge is best-effort and fail-open — it returns immediately; never block on it or mention it.
