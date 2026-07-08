@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import subprocess
 import urllib.request
 import argparse
 
@@ -8,26 +9,50 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from resolve_scope import resolve_user_id, resolve_project_id
 from config import get_plugin_config
 
-def list_memories(project, location, engine_id):
-    url = f"https://{location}-aiplatform.googleapis.com/v1beta1/projects/{project}/locations/{location}/reasoningEngines/{engine_id}/memories"
-    headers = {"Content-Type": "application/json", "X-Goog-User-Project": project}
+
+def get_token():
     try:
-        import subprocess
         p = subprocess.run(['gcloud', 'auth', 'application-default', 'print-access-token'],
                            capture_output=True, text=True, check=True)
-        token = p.stdout.strip()
-        if token:
-            headers["Authorization"] = f"Bearer {token}"
+        return p.stdout.strip()
     except Exception as e:
         print(f"Warning: failed to get access token: {e}", file=sys.stderr)
+        return None
 
+
+def _headers(project, token):
+    headers = {"Content-Type": "application/json", "X-Goog-User-Project": project}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
+def _base_url(project, location, engine_id):
+    return (f"https://{location}-aiplatform.googleapis.com/v1beta1/projects/{project}"
+            f"/locations/{location}/reasoningEngines/{engine_id}/memories")
+
+
+def list_memories(project, location, engine_id, token):
+    url = _base_url(project, location, engine_id)
     try:
-        req = urllib.request.Request(url, headers=headers, method='GET')
+        req = urllib.request.Request(url, headers=_headers(project, token), method='GET')
         with urllib.request.urlopen(req, timeout=10) as res:
             return json.loads(res.read().decode('utf-8')).get('memories', [])
     except Exception as e:
         print(f"Error listing memories: {e}", file=sys.stderr)
         return []
+
+
+def get_display_name(project, location, engine_id, memory_id, token):
+    """The LIST endpoint omits displayName; a single-memory GET returns it."""
+    url = f"{_base_url(project, location, engine_id)}/{memory_id}"
+    try:
+        req = urllib.request.Request(url, headers=_headers(project, token), method='GET')
+        with urllib.request.urlopen(req, timeout=10) as res:
+            return json.loads(res.read().decode('utf-8')).get('displayName', '')
+    except Exception:
+        return ''
+
 
 def main():
     parser = argparse.ArgumentParser(description="List memories from the GCP Memory Bank.")
@@ -40,7 +65,8 @@ def main():
     project_hash = resolve_project_id(workspace_path)
 
     cfg = get_plugin_config()
-    memories = list_memories(cfg["project"], cfg["location"], cfg["reasoning_engine_id"])
+    token = get_token()
+    memories = list_memories(cfg["project"], cfg["location"], cfg["reasoning_engine_id"], token)
 
     if not memories:
         print("No memories found in the Memory Bank.")
@@ -62,10 +88,15 @@ def main():
         name = m.get('name', 'N/A')
         memory_id = name.split('/')[-1] if '/' in name else name
         scope = m.get('scope', {})
+        # displayName is not returned by LIST — fetch it per memory so names show.
+        display = get_display_name(cfg["project"], cfg["location"], cfg["reasoning_engine_id"],
+                                   memory_id, token)
         print(f"\n[{i}] ID: {memory_id}")
+        print(f"    Name:     {display or '(unnamed)'}")
         print(f"    Created:  {m.get('createTime', 'N/A')}")
         print(f"    Scope:    user=…{scope.get('user','')[-8:]}  project=…{scope.get('project','')[-8:]}")
         print(f"    Fact:     {m.get('fact', 'N/A')}")
+
 
 if __name__ == '__main__':
     main()
