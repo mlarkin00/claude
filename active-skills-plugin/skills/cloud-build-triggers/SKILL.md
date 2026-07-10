@@ -1,5 +1,5 @@
 ---
-name: managing-cloud-build-triggers
+name: cloud-build-triggers
 description: Use when creating, updating, or managing Google Cloud Build triggers. This skill handles 1st Gen and 2nd Gen GitHub connections, branch patterns, and mandatory IAM validation.
 ---
 

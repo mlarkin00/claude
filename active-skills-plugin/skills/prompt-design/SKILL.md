@@ -1,5 +1,5 @@
 ---
-name: designing-prompts
+name: prompt-design
 description: Use this skill when you need to design, improve, or iterate on AI prompts and system instructions. This skill transitions from "vibe-based" prompting to deterministic Context Engineering, ensuring prompts are structured for both standard and reasoning models.
 ---
 

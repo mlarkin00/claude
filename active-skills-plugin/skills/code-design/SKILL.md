@@ -1,5 +1,5 @@
 ---
-name: designing-code
+name: code-design
 description: "Use when starting new feature work, building a new system or module, or when the user asks how something should be designed or architected. Triggers on phrases like 'design this', 'how should we build', 'plan the architecture', 'think through the approach', 'write a design doc', 'what's the right way to implement', or any request that involves deciding *how* something should work before writing code. Also use when the user provides requirements or a spec and expects a structured design rather than jumping straight to implementation. This skill MUST be used before implementation begins on any non-trivial feature — if the work touches more than one file or introduces a new abstraction, design first."
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: setting-up-projects
+name: project-setup
 description: Use this skill whenever the current directory lacks an `AGENTS.md` file, a `.git` repository, or other standard project descriptors, indicating it may be a new or unconfigured project. This skill MUST trigger when the user says "set up a new project," "initialize this folder," "start a new repo," or whenever an agent session begins in a directory that doesn't have a clear project-root defined. Proactively use this skill to establish the current directory as the project-root and coordinate the generation of foundational docs via the `managing-agent-instructions` skill.
 ---
 
