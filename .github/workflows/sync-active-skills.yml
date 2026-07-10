@@ -31,12 +31,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Clone source skills repo
-        run: |
-          set -euo pipefail
-          rm -rf .source
-          git clone --depth 1 "https://github.com/${SOURCE_REPO}.git" .source
-          echo "SOURCE_SHA=$(git -C .source rev-parse HEAD)" >> "$GITHUB_ENV"
+      # Use actions/checkout (not a raw `git clone`): on the runner a bare clone
+      # prompts for credentials even for a public repo. This handles auth cleanly.
+      - name: Checkout source skills repo
+        uses: actions/checkout@v4
+        with:
+          repository: mlarkin00/agent-skills
+          path: .source
+          fetch-depth: 1
+
+      - name: Record source revision
+        run: echo "SOURCE_SHA=$(git -C .source rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Mirror skills into the plugin
         run: |
