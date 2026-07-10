@@ -1,0 +1,85 @@
+{
+  "skill_name": "setting-up-projects",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Let's build a new project here. It's going to be a simple Node.js CLI tool.",
+      "expected_output": "The agent should identify that the directory is unconfigured, ask the user if they want to set up a new project, and if confirmed, initiate git, clone the agent-memory repo to pre-seed the multi-tier memory system, and trigger documentation generation.",
+      "trap": "The agent skips the 'set up' phase and just starts writing code, OR skips the agent-memory clone so the Memory Discipline section in AGENTS.md references a non-existent MEMORY.md.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "Triggers Setup Prompt",
+          "text": "The agent asks the user if they want to set up a new project."
+        },
+        {
+          "name": "Initializes Git",
+          "text": "The agent runs 'git init' or equivalent."
+        },
+        {
+          "name": "Clones agent-memory",
+          "text": "The agent clones https://github.com/mlarkin00/agent-memory into an agent-memory/ directory at the project root."
+        },
+        {
+          "name": "Seeds Before Docs",
+          "text": "The agent-memory clone happens BEFORE managing-agent-instructions is invoked, so the Memory Discipline section can be emitted with live paths."
+        },
+        {
+          "name": "Creates AGENTS.md",
+          "text": "The agent creates an AGENTS.md file."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm starting in this folder. What's the status?",
+      "expected_output": "The agent should notice the absence of AGENTS.md and offer to set up a new project, mentioning that setup includes seeding the multi-tier memory system.",
+      "trap": "The agent just lists files or says it's empty without suggesting project initialization.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "Detects Missing Configuration",
+          "text": "The agent identifies that AGENTS.md or .git is missing."
+        },
+        {
+          "name": "Offers Setup",
+          "text": "The agent offers to set up the project."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Check the project status.",
+      "expected_output": "The agent should NOT trigger the setup skill if AGENTS.md and .git are already present.",
+      "trap": "The agent triggers the setup skill unnecessarily even though the project is already configured.",
+      "files": ["AGENTS.md", ".git/HEAD"],
+      "assertions": [
+        {
+          "name": "No Redundant Setup Prompt",
+          "text": "The agent does NOT ask to set up a new project."
+        },
+        {
+          "name": "No Redundant Memory Seed",
+          "text": "The agent does NOT clone agent-memory if the project is already configured."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Initialize this empty folder as a new Python data-science project. I don't really care about memory stuff, just get the basics in place.",
+      "expected_output": "The agent should still pre-seed the agent-memory scaffolding even though the user de-prioritized it — memory seeding is not opt-in for new projects. The agent may acknowledge the user's preference but should explain that seeding is part of the default scaffold.",
+      "trap": "The agent takes the user's 'I don't care about memory stuff' as permission to skip cloning agent-memory, leaving the project with a broken Memory Discipline section or an inconsistent scaffold.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "Seeds Memory Despite Deprioritization",
+          "text": "The agent still clones agent-memory/ into the project root as part of the default scaffold."
+        },
+        {
+          "name": "Briefly Explains Why",
+          "text": "The agent briefly notes that memory scaffolding is seeded by default because downstream docs reference it, rather than silently overriding the user or silently skipping."
+        }
+      ]
+    }
+  ]
+}

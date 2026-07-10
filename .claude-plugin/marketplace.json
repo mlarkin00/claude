@@ -40,6 +40,12 @@
       "source": "./antigravity-review",
       "description": "Code review via Google Antigravity. An agy-code-reviewer subagent and /agy-review command assemble a git diff plus context into a review brief and send it to the Antigravity CLI (agy --print) for a second-opinion review.",
       "version": "0.1.2"
+    },
+    {
+      "name": "active-skills-plugin",
+      "source": "./active-skills-plugin",
+      "description": "Installs the full set of agent skills from mlarkin00/agent-skills (active-skills/). Skills are vendored and auto-synced: a push to the source repo re-syncs, re-versions, and re-releases the plugin.",
+      "version": "0.1.0"
     }
   ]
 }

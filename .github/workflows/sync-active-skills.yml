@@ -1,0 +1,96 @@
+name: Sync active-skills
+
+# Keeps active-skills-plugin/skills/ mirrored to mlarkin00/agent-skills (active-skills/).
+# Runs on: a repository_dispatch from the source repo (instant), a daily poll
+# (fallback), and manual dispatch. When the mirror changes, bumps the plugin
+# version, updates marketplace.json, commits, tags, and cuts a release.
+on:
+  repository_dispatch:
+    types: [active-skills-updated]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * *" # daily ~06:17 UTC, fallback if the dispatch is missing
+
+concurrency:
+  group: sync-active-skills
+  cancel-in-progress: false
+
+env:
+  SOURCE_REPO: mlarkin00/agent-skills
+  SOURCE_PATH: active-skills
+  PLUGIN: active-skills-plugin
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout marketplace
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone source skills repo
+        run: |
+          set -euo pipefail
+          rm -rf .source
+          git clone --depth 1 "https://github.com/${SOURCE_REPO}.git" .source
+          echo "SOURCE_SHA=$(git -C .source rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Mirror skills into the plugin
+        run: |
+          set -euo pipefail
+          SRC=".source/${SOURCE_PATH}/"
+          DEST="${PLUGIN}/skills/"
+          if [ ! -d "$SRC" ]; then
+            echo "::error::Source path $SRC not found in ${SOURCE_REPO}"; exit 1
+          fi
+          mkdir -p "$DEST"
+          # Exact mirror (add/update/delete). Anchored '/.gitignore' drops only the
+          # source repo's top-level ignore file, not any skill's nested one.
+          rsync -a --delete --exclude='/.gitignore' "$SRC" "$DEST"
+          bash "${PLUGIN}/scripts/gen-readme.sh"
+
+      - name: Detect changes
+        id: diff
+        run: |
+          set -euo pipefail
+          if git status --porcelain -- "${PLUGIN}" | grep -q .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Skill changes detected:"; git status --porcelain -- "${PLUGIN}"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Already up to date with ${SOURCE_REPO}@${SOURCE_SHA}."
+          fi
+
+      - name: Bump, commit, tag, release
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          MANIFEST="${PLUGIN}/.claude-plugin/plugin.json"
+          MARKETPLACE=".claude-plugin/marketplace.json"
+
+          VERSION=$(jq -r '.version' "$MANIFEST")
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          NEW="$major.$minor.$((patch + 1))"
+          echo "${PLUGIN}: $VERSION -> $NEW"
+
+          jq --arg v "$NEW" '.version = $v' "$MANIFEST" > tmp && mv tmp "$MANIFEST"
+          jq --arg n "$PLUGIN" --arg v "$NEW" \
+            '(.plugins[] | select(.name == $n) | .version) = $v' \
+            "$MARKETPLACE" > tmp && mv tmp "$MARKETPLACE"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${PLUGIN}" "$MARKETPLACE"
+          git commit -m "chore(${PLUGIN}): sync skills from ${SOURCE_REPO}@${SOURCE_SHA:0:7} (v$NEW)"
+
+          TAG="${PLUGIN}-v$NEW"
+          git tag "$TAG"
+          git push origin HEAD:main
+          git push origin "$TAG"
+          gh release create "$TAG" --title "$TAG" \
+            --notes "Synced \`${SOURCE_PATH}/\` from ${SOURCE_REPO}@${SOURCE_SHA}."

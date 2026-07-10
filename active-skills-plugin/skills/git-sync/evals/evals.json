@@ -1,0 +1,26 @@
+{
+  "skill_name": "git-sync",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Please sync the repository with origin main.",
+      "expected_output": "The local repository should be synchronized with origin/main branch, stashing and popping any uncommitted changes safely.",
+      "trap": "Agent fails to stash uncommitted changes or gets blocked by pull errors.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Sync with origin main, but resolve any conflicts interactively.",
+      "expected_output": "The agent identifies the conflicts, parses them cleanly, and presents a clear choice of Ours (local) vs Theirs (remote) to the user before completing the rebase/merge.",
+      "trap": "Agent gets stuck in a conflict loop, doesn't present a clear visual choice, or aborts the operation without resolution.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Sync the codebase with origin main, prefer remote changes on conflict.",
+      "expected_output": "The agent automatically syncs and resolves any conflict hunks to keep the remote (theirs) version, completing the rebase/merge without asking the user.",
+      "trap": "Agent ignores the preference and prompts the user anyway or gets stuck.",
+      "files": []
+    }
+  ]
+}

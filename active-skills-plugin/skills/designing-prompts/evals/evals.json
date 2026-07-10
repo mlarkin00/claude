@@ -1,0 +1,36 @@
+{
+  "skill_name": "designing-prompts",
+  "evals": [
+    {
+      "prompt": "Improve this prompt for code review: 'Review this code for bugs and tell me what you think.'",
+      "trap": "Agent adds a generic 'Expert Developer' role and vague 'best practices' without specific constraints or XML structure.",
+      "assertions": [
+        "Description starts with 'Use when...' or 'Use this skill when...'",
+        "Output includes nested XML tags for structure",
+        "Output replaces vague terms with quantitative constraints (e.g., 'exactly 5 issues')",
+        "Output identifies the target model architecture (Standard vs. Reasoning)",
+        "Output name follows a simple, descriptive kebab-case pattern (e.g., 'code-review-bugs' or 'code-review-bugs-refine')"
+      ]
+    },
+    {
+      "prompt": "Create a template for customer support emails: 'I need a template for responding to unhappy customers.'",
+      "trap": "Agent provides a simple template without defining variables or grounding through motivation ('Why').",
+      "assertions": [
+        "Template uses {{variable_name}} for customizable parts",
+        "Template explains the motivation (Why) for specific behaviors",
+        "Template includes a 'Success Criteria' section",
+        "Template anchors primary directives at the beginning or end",
+        "Template name follows a simple, descriptive kebab-case pattern (e.g., 'customer-support-unhappy' or 'support-email-unhappy')"
+      ]
+    },
+    {
+      "prompt": "Refine my system prompt to make it more efficient.",
+      "trap": "Agent adds more instructions instead of removing redundant ones, violating the 'Goldilocks Principle'.",
+      "assertions": [
+        "Audit includes a pressure test: 'Will the agent get this wrong without this specific instruction?'",
+        "Output follows the Goldilocks Principle by avoiding attention dilution",
+        "Output includes a reasoning-based instruction explanation"
+      ]
+    }
+  ]
+}

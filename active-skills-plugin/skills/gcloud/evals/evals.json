@@ -1,0 +1,158 @@
+{
+  "skill_name": "gcloud",
+  "evals": [
+    {
+      "prompt": "List my compute instances in project-x",
+      "trap": "Agent might forget --project or fail to use data reduction flags like --limit.",
+      "assertions": [
+        "Uses 'gcloud compute instances list'",
+        "Includes --project=project-x",
+        "Uses --limit or --format to reduce data"
+      ]
+    },
+    {
+      "prompt": "I need to check the status of a cloud run service named 'my-service' in us-central1",
+      "trap": "Agent might forget to validate the service name or location flags.",
+      "assertions": [
+        "Uses 'gcloud run services describe my-service'",
+        "Includes --region=us-central1",
+        "Includes --project"
+      ]
+    },
+    {
+      "prompt": "Find all buckets in GCS for project 'finance-prod'",
+      "trap": "Agent might use 'gsutil' instead of 'gcloud storage' or forget --project.",
+      "assertions": [
+        "Uses 'gcloud storage buckets list'",
+        "Includes --project=finance-prod"
+      ]
+    },
+    {
+      "prompt": "Describe the pubsub topic 'updates-topic'",
+      "trap": "Agent might assume the command syntax without calling help.",
+      "assertions": [
+        "Calls 'gcloud help pubsub topics describe' first",
+        "Includes --project"
+      ]
+    },
+    {
+      "prompt": "Show me the logs for the deployment 'web-app' in gcloud",
+      "trap": "Agent might use 'kubectl' instead of 'gcloud logging' or 'gcloud beta run logs'.",
+      "assertions": [
+        "Uses 'gcloud logging read' or service-specific logging command",
+        "Filters by resource or service name"
+      ]
+    },
+    {
+      "prompt": "List all regions available in my project 'my-dev-project'",
+      "trap": "Agent might forget the service-specific regions list command.",
+      "assertions": [
+        "Uses 'gcloud compute regions list'",
+        "Includes --project=my-dev-project"
+      ]
+    },
+    {
+      "prompt": "I want to see the details of a secret named 'api-key'",
+      "trap": "Agent might forget that secrets are versioned.",
+      "assertions": [
+        "Uses 'gcloud secrets versions access' or 'gcloud secrets describe'",
+        "Includes --project"
+      ]
+    },
+    {
+      "prompt": "Check if a firewall rule named 'allow-http' exists",
+      "trap": "Agent might try to list all rules instead of describing the specific one.",
+      "assertions": [
+        "Uses 'gcloud compute firewall-rules describe allow-http'",
+        "Includes --project"
+      ]
+    },
+    {
+      "prompt": "List all storage buckets",
+      "trap": "Agent might forget to ask for the project ID if it's not in context.",
+      "assertions": [
+        "Uses 'gcloud storage buckets list'",
+        "Includes --project"
+      ]
+    },
+    {
+      "prompt": "Query the status of operation 'op.12345'",
+      "trap": "Agent might forget to use the correct operations group.",
+      "assertions": [
+        "Uses 'gcloud compute operations describe' or similar",
+        "Includes --project"
+      ]
+    },
+    {
+      "prompt": "Write a python script to list gcs buckets",
+      "trap": "This is a near-miss; agent should use an SDK skill or write code, not just gcloud commands.",
+      "assertions": [
+        "Does NOT exclusively use gcloud CLI instructions",
+        "Suggests using the Google Cloud Python Client Library"
+      ]
+    },
+    {
+      "prompt": "Debug this java code using the cloud storage client library",
+      "trap": "Near-miss; out of scope for gcloud CLI skill.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    },
+    {
+      "prompt": "How do I authenticate my local app to gcp?",
+      "trap": "Near-miss; may be better handled by a dedicated auth skill.",
+      "assertions": [
+        "Mentions 'gcloud auth application-default login' but acknowledges it's for ADC"
+      ]
+    },
+    {
+      "prompt": "Deploy this kubernetes manifest",
+      "trap": "Near-miss; should use 'kubectl' or a K8s-specific skill.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill for manifest deployment"
+      ]
+    },
+    {
+      "prompt": "Fix this terraform code for a vpc",
+      "trap": "Near-miss; should use a Terraform skill.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    },
+    {
+      "prompt": "Explain how IAM roles work",
+      "trap": "Near-miss; general knowledge task.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    },
+    {
+      "prompt": "List files in my local directory",
+      "trap": "Near-miss; standard shell task.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    },
+    {
+      "prompt": "Create a new git branch",
+      "trap": "Near-miss; Git task.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    },
+    {
+      "prompt": "Help me with AWS s3",
+      "trap": "Near-miss; wrong cloud provider.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    },
+    {
+      "prompt": "How do I setup a new git repo?",
+      "trap": "Near-miss; Git task.",
+      "assertions": [
+        "Does NOT trigger gcloud CLI skill"
+      ]
+    }
+  ]
+}

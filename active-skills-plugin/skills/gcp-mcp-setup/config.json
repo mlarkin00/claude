@@ -1,0 +1,46 @@
+{
+  "$comment": "Externalized configuration for the gcp-mcp-setup skill. No endpoints, projects, or paths are hardcoded in the instructions or scripts — edit them here.",
+  "defaults": {
+    "scope": "user",
+    "transport": "http",
+    "helper_install_dir": "~/.claude/mcp-helpers",
+    "min_claude_code_version": "2.1.193"
+  },
+  "token_source": {
+    "mode": "gcloud-user",
+    "gcloud_user_command": "gcloud auth print-access-token",
+    "adc_command": "gcloud auth application-default print-access-token",
+    "notes": "gcloud-user is simplest on a dev workstation/VM. Use adc or an attached service account for headless/CI contexts."
+  },
+  "endpoint_directory": {
+    "url": "https://docs.cloud.google.com/mcp/supported-products",
+    "authoritative": true,
+    "notes": "Canonical, continuously-updated list of all Google Cloud / Google / Workspace MCP endpoints. Fetch this to resolve a product name to a URL or confirm an endpoint exists. It supersedes known_servers below, which is only an offline hint cache.",
+    "url_patterns": {
+      "common": "https://<service>.googleapis.com/mcp  (backing API = <service>.googleapis.com)",
+      "exceptions": [
+        "Cloud Storage: https://storage.googleapis.com/storage/mcp",
+        "Workspace (Drive/Gmail/Calendar/Chat/People): https://<svc>mcp.googleapis.com/mcp/v1",
+        "Regional services: https://<service>.<REGION>.rep.googleapis.com/mcp",
+        "Gemini Enterprise Agent Platform: https://aiplatform.googleapis.com/mcp/<toolset>"
+      ]
+    }
+  },
+  "known_servers": {
+    "$note": "Offline hint cache only — the endpoint_directory URL above is authoritative and current. Do not treat this list as complete.",
+    "developer-knowledge": {
+      "url": "https://developerknowledge.googleapis.com/mcp",
+      "service": "developerknowledge.googleapis.com",
+      "oauth_authorization_server": "https://accounts.google.com/",
+      "oauth_scope": "https://www.googleapis.com/auth/devprofiles.full_control",
+      "docs": "https://developers.google.com/knowledge/reference/mcp",
+      "tools": ["search_documents", "answer_query", "get_documents"],
+      "notes": "Doc search across Google developer products (Android, Chrome, Firebase, Flutter, Go, Google Cloud, Gemini/AI, Maps, Web, etc.). Handshake is public; tool calls need a bearer token + x-goog-user-project."
+    }
+  },
+  "reference_docs": {
+    "google_cloud_mcp_overview": "https://docs.cloud.google.com/mcp/overview",
+    "authenticate_mcp": "https://docs.cloud.google.com/mcp/authenticate-mcp",
+    "claude_code_mcp": "https://code.claude.com/docs/en/mcp"
+  }
+}
