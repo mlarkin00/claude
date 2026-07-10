@@ -31,14 +31,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Use actions/checkout (not a raw `git clone`): on the runner a bare clone
-      # prompts for credentials even for a public repo. This handles auth cleanly.
+      # The source repo is private, so authenticate with a read-scoped PAT
+      # (secret SKILLS_SRC_TOKEN). The default GITHUB_TOKEN is scoped to this repo
+      # and gets a 404 on the source. actions/checkout handles auth cleanly; a bare
+      # `git clone` prompts for credentials on the runner.
       - name: Checkout source skills repo
         uses: actions/checkout@v4
         with:
           repository: mlarkin00/agent-skills
+          token: ${{ secrets.SKILLS_SRC_TOKEN }}
           path: .source
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Record source revision
         run: echo "SOURCE_SHA=$(git -C .source rev-parse HEAD)" >> "$GITHUB_ENV"
