@@ -97,9 +97,29 @@ jobs:
           git add "${PLUGIN}" "$MARKETPLACE"
           git commit -m "chore(${PLUGIN}): sync skills from ${SOURCE_REPO}@${SOURCE_SHA:0:7} (v$NEW)"
 
+          # Push to main, rebasing if another writer (release.yml bot, memory bot,
+          # a human) landed a commit during this run. Only sync/ bumps this plugin's
+          # version and concurrency serializes syncs, so a rebase only pulls in
+          # unrelated changes and never touches $NEW. Tag AFTER the push so the tag
+          # points at the final (possibly rebased) commit.
+          pushed=false
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then pushed=true; break; fi
+            echo "push rejected (attempt $attempt/5); rebasing onto origin/main"
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "::error::rebase conflict against origin/main; will retry on next run"
+              exit 1
+            fi
+            sleep 3
+          done
+          if [ "$pushed" != true ]; then
+            echo "::error::could not fast-forward main after 5 attempts"; exit 1
+          fi
+
           TAG="${PLUGIN}-v$NEW"
           git tag "$TAG"
-          git push origin HEAD:main
           git push origin "$TAG"
           gh release create "$TAG" --title "$TAG" \
             --notes "Synced \`${SOURCE_PATH}/\` from ${SOURCE_REPO}@${SOURCE_SHA}."
