@@ -1,6 +1,7 @@
 ---
 name: auto-mode
-description: Use when the user invokes `/auto <task>` or says "run autonomously", "do it end-to-end", "no prompts", "auto mode". Plan-driven autonomous execution — agent writes a full plan, batches all clarifying questions up front, then executes phase-by-phase without further prompting. Tests after every phase. Records summary + learnings back into the plan doc.
+description: Plan-driven autonomous execution where the agent writes a full plan, batches clarifying questions up front, and executes phase-by-phase with testing and summary logging.
+category: workflow
 ---
 
 # Auto

@@ -1,6 +1,7 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: "Use this skill when you need to turn ideas into fully formed designs and specs through natural collaborative dialogue before any creative work - creating features, building components, adding functionality, or modifying behavior."
+category: design
 ---
 
 # Brainstorming Ideas Into Designs
@@ -93,9 +94,9 @@ digraph brainstorming {
 
 **Design for isolation and clarity:**
 
-- Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
-- For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
-- Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
+- Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and MUST be understood and tested independently
+- For each unit, you MUST be able to answer: what does it do, how do you use it, and what does it depend on?
+- You MUST ensure someone can understand what a unit does without reading its internals. You MUST be able to change the internals without breaking consumers. If not, the boundaries need work.
 - Smaller, well-bounded units are also easier for you to work with - you reason better about code you can hold in context at once, and your edits are more reliable when files are focused. When a file grows large, that's often a signal that it's doing too much.
 
 **Working in existing codebases:**

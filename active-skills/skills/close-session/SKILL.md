@@ -1,13 +1,14 @@
 ---
 name: close-session
-description: Use at the end of any work session to update project documentation, commit changes, and push safely to GitHub. Use when the user says "close session", "wrap up", "end session", "done for now", "save my work", "commit and push", or when finishing a block of work with no further tasks planned. Use this skill even if the session produced only docs changes or only minor fixes — every session deserves a clean close.
+description: Use when the user says "close session", "wrap up", "end session", "done for now", "save my work", "commit and push", or when finishing a block of work with no further tasks planned to update project documentation, commit changes, and push safely to GitHub.
+category: git
 ---
 
 # Close Session
 
 End-of-session ritual: update docs → commit → classify changes → merge related branches to main → push or hold.
 
-**Core principle:** Every session ends with accurate documentation and a clean, safe git state. Breaking changes never push until the related work is complete — or the user explicitly overrides.
+**Core principle:** Every session ends with accurate documentation and a clean, safe git state. Breaking changes MUST NEVER push until the related work is complete — or the user explicitly overrides.
 
 **Announce at start:** "I'm using the close-session skill to wrap up this session."
 
@@ -24,7 +25,7 @@ Focus on changes this session introduced:
 - Completed tasks → prune from `.agents/TODO.md`
 - UI tokens or component changes → update `DESIGN.md` and run `npx @google/design.md lint`
 
-If the session made no architectural or convention changes, a brief read-and-confirm that existing docs are still accurate is sufficient — don't update for its own sake.
+If the session made no architectural or convention changes, a brief read-and-confirm that existing docs are still accurate is sufficient — do not update for its own sake.
 
 ## Step 2: Stage and Review Changes
 
