@@ -1,6 +1,6 @@
 name: Sync active-skills
 
-# Keeps active-skills-plugin/skills/ mirrored to mlarkin00/agent-skills (active-skills/).
+# Keeps active-skills/skills/ mirrored to mlarkin00/agent-skills (active-skills/).
 # Runs on: a repository_dispatch from the source repo (instant), a daily poll
 # (fallback), and manual dispatch. When the mirror changes, bumps the plugin
 # version, updates marketplace.json, commits, tags, and cuts a release.
@@ -18,7 +18,7 @@ concurrency:
 env:
   SOURCE_REPO: mlarkin00/agent-skills
   SOURCE_PATH: active-skills
-  PLUGIN: active-skills-plugin
+  PLUGIN: active-skills
 
 jobs:
   sync:

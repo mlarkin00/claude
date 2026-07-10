@@ -1,8 +1,8 @@
-name: Notify active-skills-plugin
+name: Notify active-skills
 
 # Install this at .github/workflows/notify-plugin.yml in mlarkin00/agent-skills.
 # On any push touching active-skills/**, it pings mlarkin00/claude so the
-# active-skills-plugin re-syncs immediately (the plugin also polls daily as a
+# active-skills re-syncs immediately (the plugin also polls daily as a
 # fallback, so this is an optimization, not a hard dependency).
 #
 # Setup: add a PAT with `repo` scope on mlarkin00/claude as the Actions secret

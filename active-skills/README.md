@@ -1,4 +1,4 @@
-# active-skills-plugin
+# active-skills
 
 Installs the full set of agent skills from the [`mlarkin00/agent-skills`](https://github.com/mlarkin00/agent-skills) repository (the `active-skills/` directory) as a single Claude Code plugin.
 
@@ -10,17 +10,17 @@ From the `mlarkin00-claude` marketplace:
 
 ```
 /plugin marketplace add mlarkin00/claude
-/plugin install active-skills-plugin@mlarkin00-claude
+/plugin install active-skills@mlarkin00-claude
 ```
 
-Once installed, every skill is available and namespaced under this plugin, e.g. `active-skills-plugin:systematic-debugging`.
+Once installed, every skill is available and namespaced under this plugin, e.g. `active-skills:systematic-debugging`.
 
 ## Auto-sync
 
 The vendored skills track the source repo automatically. Two workflows cooperate:
 
 1. **`notify-plugin.yml`** (lives in `mlarkin00/agent-skills`) — on any push that touches `active-skills/**`, it sends a [`repository_dispatch`](https://docs.github.com/actions/reference/events-that-trigger-workflows#repository_dispatch) event (`event_type: active-skills-updated`) to this repo. This gives near-instant updates. A reference copy of this workflow is kept at [`sync/notify-plugin.yml`](./sync/notify-plugin.yml).
-2. **`sync-active-skills.yml`** (lives in `mlarkin00/claude`, this repo) — on that dispatch (and also on a **daily schedule** and via **manual run** as fallbacks), it clones the source repo, mirrors `active-skills/` into `active-skills-plugin/skills/` (adds, updates, **and deletes** to match exactly), regenerates this README's skill list, and — if anything changed — bumps the plugin version, updates `marketplace.json`, commits, tags, and cuts a GitHub release.
+2. **`sync-active-skills.yml`** (lives in `mlarkin00/claude`, this repo) — on that dispatch (and also on a **daily schedule** and via **manual run** as fallbacks), it clones the source repo, mirrors `active-skills/` into `active-skills/skills/` (adds, updates, **and deletes** to match exactly), regenerates this README's skill list, and — if anything changed — bumps the plugin version, updates `marketplace.json`, commits, tags, and cuts a GitHub release.
 
 So adding, deleting, or editing a skill in the source repo results in a new plugin release with the vendored `skills/` in lockstep.
 
