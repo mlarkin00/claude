@@ -45,7 +45,7 @@
       "name": "active-skills",
       "source": "./active-skills",
       "description": "Installs the full set of agent skills from mlarkin00/agent-skills (active-skills/). Skills are vendored and auto-synced: a push to the source repo re-syncs, re-versions, and re-releases the plugin.",
-      "version": "0.1.5"
+      "version": "0.1.6"
     }
   ]
 }

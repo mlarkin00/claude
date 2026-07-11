@@ -19,11 +19,19 @@ cases {
 }
 
 cases {
-  name: "trigger_auditing_skills"
+  name: "trigger_skill_improvement"
   tags: "triggering"
   tags: "fast"
   prompt: "Audit the agent skill in active-skills/gcloud against the specification."
-  expected_skills: "active-skills/auditing-skills"
+  expected_skills: "active-skills/skill-improvement"
+}
+
+cases {
+  name: "trigger_skill_improvement_implement"
+  tags: "triggering"
+  tags: "fast"
+  prompt: "Review my SKILL.md in active-skills/refresh-skills and fix whatever isn't following best practices."
+  expected_skills: "active-skills/skill-improvement"
 }
 
 cases {

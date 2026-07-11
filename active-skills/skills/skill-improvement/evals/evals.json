@@ -1,0 +1,51 @@
+{
+  "skill_name": "skill-improvement",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit the agent skill in active-skills/gcloud against the specification.",
+      "expected_output": "The agent locates the gcloud skill, runs scripts/audit_skill.py for the mechanical pre-pass, scores it against the rubric dimensions with cited evidence, runs the triggering test on the description, and produces a ranked review report.",
+      "trap": "Without the skill, the agent eyeballs SKILL.md and gives vague impressions, skipping objective checks (path integrity, secret scan, script safety) and the triggering test.",
+      "assertions": [
+        { "id": "a1", "description": "Runs scripts/audit_skill.py against the target skill directory.", "type": "content" },
+        { "id": "a2", "description": "Evaluates the skill across the rubric dimensions (triggering, structure, content, paths, scripts, security, scoping, freshness) with cited locations.", "type": "content" },
+        { "id": "a3", "description": "Produces a ranked report with severity-ordered findings, each carrying a location and a concrete fix.", "type": "content" }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Review my SKILL.md in active-skills/refresh-skills and fix whatever isn't following best practices.",
+      "expected_output": "The agent audits the skill, presents findings, then implements the fixes: mechanical/unambiguous ones directly, judgment calls proposed first, snapshots before editing, and re-runs the audit to verify the fixes landed.",
+      "trap": "The agent stops at a review and hands back a list of suggestions instead of implementing the improvements and re-verifying them.",
+      "assertions": [
+        { "id": "a1", "description": "Both diagnoses AND implements improvements rather than only reporting.", "type": "content" },
+        { "id": "a2", "description": "Snapshots the skill before editing and re-runs audit_skill.py to verify fixes.", "type": "content" },
+        { "id": "a3", "description": "Proposes judgment-call edits (e.g. description rewrite, re-scoping) before committing them.", "type": "content" }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Before I share this skill with my team, can you check it for security issues and weak triggering?",
+      "expected_output": "The agent runs the secret/adversarial-instruction scan and network audit, runs the triggering test on the description, and reports blockers (any hardcoded secret or covert instruction escalated regardless of other scores) plus triggering improvements.",
+      "trap": "Without the skill, the agent gives a generic thumbs-up without scanning for secrets, over-broad tool grants, covert instructions, or testing whether the description actually triggers.",
+      "assertions": [
+        { "id": "a1", "description": "Performs a security pass (secret scan, network/egress audit, least-privilege, adversarial-instruction check).", "type": "content" },
+        { "id": "a2", "description": "Runs the 3-trigger / 3-near-miss triggering test on the description.", "type": "content" },
+        { "id": "a3", "description": "Escalates any hardcoded secret or covert instruction to Blocker regardless of other scores.", "type": "content" }
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "I want to create a brand-new skill for rotating PDFs from scratch. Where do I start?",
+      "expected_output": "This is a near-miss. Creating a skill from scratch is skill-creator-enhanced's job, not this skill's. The agent should not run the improvement/audit workflow on a non-existent skill.",
+      "trap": "The skill over-triggers on the word 'skill' and tries to audit something that doesn't exist yet.",
+      "assertions": [
+        { "id": "a1", "description": "Does NOT invoke the skill-improvement audit workflow (defers to skill creation).", "type": "negative" }
+      ],
+      "files": []
+    }
+  ]
+}
