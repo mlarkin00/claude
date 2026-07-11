@@ -35,6 +35,14 @@ cases {
 }
 
 cases {
+  name: "trigger_skill_portfolio_review"
+  tags: "triggering"
+  tags: "fast"
+  prompt: "My active-skills directory has grown a lot. Review all of the skills and tell me if any of them can be consolidated."
+  expected_skills: "active-skills/skill-portfolio-review"
+}
+
+cases {
   name: "trigger_auto_mode"
   tags: "triggering"
   tags: "fast"

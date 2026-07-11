@@ -1,6 +1,6 @@
 {
   "name": "active-skills",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Installs the full set of agent skills from mlarkin00/agent-skills (active-skills/). Skills are vendored into this plugin and kept in sync automatically: a push to the source repo re-syncs, re-versions, and re-releases the plugin.",
   "author": {
     "name": "Matt Larkin",

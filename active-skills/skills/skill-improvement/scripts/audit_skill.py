@@ -239,7 +239,9 @@ def collect_path_refs(text):
 
 def check_paths(findings, skill_dir, skill_md_text):
     for ref in sorted(collect_path_refs(skill_md_text)):
-        clean = ref.split("#", 1)[0].strip()
+        # Drop trailing prose punctuation so "references/." / "scripts/foo.py)." from
+        # sentences don't read as real paths.
+        clean = ref.split("#", 1)[0].strip().rstrip(".,;:)]}`\"'")
         if not clean or clean.startswith(("http://", "https://", "mailto:")):
             continue
         if "\\" in clean:
@@ -253,7 +255,10 @@ def check_paths(findings, skill_dir, skill_md_text):
             continue
         target = os.path.normpath(os.path.join(skill_dir, clean.lstrip("./")))
         last = os.path.basename(clean.rstrip("/"))
-        looks_like_file = "." in last
+        # Only treat as a file reference when the final segment has a real
+        # extension (foo.md); bare 'references/' or 'references/templates' in
+        # prose is a directory mention, not a broken file link.
+        looks_like_file = bool(re.match(r".+\.[A-Za-z0-9]+$", last))
         is_dir_ref = clean.endswith("/")
         if looks_like_file and not os.path.isfile(target):
             add(findings, "error", "path-integrity", "SKILL.md",
