@@ -1,7 +1,8 @@
 ---
 name: close-session
 description: Use when the user says "close session", "wrap up", "end session", "done for now", "save my work", "commit and push", or when finishing a block of work with no further tasks planned to update project documentation, commit changes, and push safely to GitHub.
-category: git
+metadata:
+  category: team-automation
 ---
 
 # Close Session
@@ -163,7 +164,7 @@ If the user explicitly says "push anyway", "force push", or similar — merge th
 | "The breaking change is intentional, so it's fine"           | Intent doesn't unbreak callers. Hold until downstream work lands.                                     |
 | "I'll push the docs update even if the code is breaking"     | All staged changes travel in the same push. Hold everything or push everything.                       |
 | "Nothing to commit, nothing to do"                           | If the session established new conventions, docs need updating even without code changes.             |
-| "I already know what the docs say"                           | The session may have shifted implicit conventions. Read before declaring docs current.                |
+| "I already know what the docs say"                           | The session MUST update or confirm currency. Read before declaring docs current.                      |
 | "I'll skip managing-agent-instructions — the docs look fine" | "Looks fine" from memory is not the same as confirming currency. Invoke the skill.                    |
 
 ## Quick Reference

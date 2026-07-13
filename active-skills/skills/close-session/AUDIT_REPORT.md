@@ -3,7 +3,7 @@
 | Check | Status | Finding |
 | --- | --- | --- |
 | naming | ✅ | Matches specification. |
-| frontmatter | ⚠️ | Description MUST start with 'Use when...' or 'Use this skill when...'. Missing 'category' field in YAML frontmatter metadata. |
+| frontmatter | ✅ | Format is valid. |
 | tone | ❌ | Found passive suggestion prose (should, consider, might). Use MUST/NEVER for discipline skills. |
 | paths | ✅ | Forward slashes used. |
 | scripts | ✅ | Deterministic and non-interactive. |
