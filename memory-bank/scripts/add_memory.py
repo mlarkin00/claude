@@ -34,6 +34,24 @@ def add_memory(project, location, engine_id, user_hash, project_hash, fact):
         print(f"Error adding memory: {e}", file=sys.stderr)
         return None
 
+def memory_id_from_response(res):
+    """Extract the memory ID from a CreateMemory long-running-operation response.
+
+    CreateMemory returns an Operation, not the Memory. The operation's own
+    `name` ends in the OPERATION id, but its `response.name` (present once
+    done) is the canonical memory resource. As a fallback, the operation name
+    embeds the memory id as `.../memories/{MEMORY_ID}/operations/{OP_ID}`.
+    """
+    if not isinstance(res, dict):
+        return ''
+    resource_name = (res.get('response') or {}).get('name', '')
+    if not resource_name:
+        op_name = res.get('name', '')
+        if '/operations/' in op_name:
+            resource_name = op_name.split('/operations/')[0]
+    return resource_name.split('/')[-1] if resource_name else ''
+
+
 def main():
     parser = argparse.ArgumentParser(description="Add a new memory fact to the GCP Memory Bank.")
     parser.add_argument("fact", help="The text of the memory fact to store.")
@@ -49,8 +67,8 @@ def main():
     res = add_memory(cfg["project"], cfg["location"], cfg["reasoning_engine_id"],
                      user_hash, project_hash, args.fact)
 
-    if res is not None and isinstance(res, dict) and ('name' in res or 'fact' in res):
-        memory_id = res.get('name', '').split('/')[-1] or 'N/A'
+    memory_id = memory_id_from_response(res)
+    if memory_id:
         print(f"Successfully added memory '{memory_id}'.")
     else:
         print("Failed to add memory.")
