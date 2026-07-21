@@ -12,18 +12,6 @@
       "version": "0.3.1"
     },
     {
-      "name": "gema-kube-agents",
-      "source": "./gema-kube-agents",
-      "description": "stdio MCP server + /kube-agents skill for the kube-agents platform agent (Gemini Managed Agents Interactions API path). Live tool-call narration + GCS audit transcripts.",
-      "version": "0.4.1"
-    },
-    {
-      "name": "kagent-kube-agents",
-      "source": "./kagent-kube-agents",
-      "description": "stdio MCP server for the kagent platform-agent running on GKE. Communicates via A2A JSON-RPC. Auto-starts kubectl port-forward.",
-      "version": "0.1.0"
-    },
-    {
       "name": "memory-bank",
       "source": "./memory-bank",
       "description": "GCP-backed long-term memory for Claude Code. Fetches global and project-scoped facts from Vertex AI Reasoning Engine Memory Bank at session start; consolidates new facts at session end.",
@@ -34,12 +22,6 @@
       "source": "./llm-wiki",
       "description": "OKF v0.1 knowledge bundle manager. Author, ingest, lint, query, and visualize Open Knowledge Format bundles. Implements the Karpathy LLM-wiki pattern with BigQuery and web ingest adapters.",
       "version": "0.1.0"
-    },
-    {
-      "name": "antigravity-review",
-      "source": "./antigravity-review",
-      "description": "Code review via Google Antigravity. An agy-code-reviewer subagent and /agy-review command assemble a git diff plus context into a review brief and send it to the Antigravity CLI (agy --print) for a second-opinion review.",
-      "version": "0.1.2"
     },
     {
       "name": "active-skills",

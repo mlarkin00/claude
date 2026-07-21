@@ -1,7 +1,0 @@
-{
-  "mcpServers": {
-    "kube-platform": {
-      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/run-server.sh"
-    }
-  }
-}
