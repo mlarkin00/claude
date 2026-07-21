@@ -1,0 +1,10 @@
+{
+  "description": "Commits and pushes accumulated skill-usage counts.",
+  "builtin": "schedule",
+  "args": [
+    "*/30 * * * *",
+    "python3",
+    "../../scripts/sync-usage.py"
+  ],
+  "restart_policy": "on-failure"
+}

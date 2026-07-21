@@ -1,0 +1,17 @@
+{
+  "skill-usage": {
+    "enabled": true,
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./scripts/track-usage-agy.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
