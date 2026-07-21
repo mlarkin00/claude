@@ -28,7 +28,9 @@ jobs:
           set -euo pipefail
 
           MARKETPLACE=".claude-plugin/marketplace.json"
-          PLUGINS="agent-memory antigravity-review gema-kube-agents kagent-kube-agents memory-bank"
+          # active-skills is deliberately absent: sync-active-skills.yml owns its
+          # versioning and releases.
+          PLUGINS="agent-memory memory-bank"
 
           # Files changed in this push (handles first-push / force-push gracefully).
           BEFORE="${{ github.event.before }}"
