@@ -11,7 +11,7 @@ Exit 0 = conformant; exit 1 = violations found (messages on stderr).
   - parseable YAML frontmatter
   - a non-empty 'type' field
 
-Reserved files (index.md, log.md) are skipped.
+Reserved files (index.md, log.md, CLAUDE.md) are skipped.
 Hook mode: also skips files with no frontmatter block at all (may be plain notes).
 """
 from __future__ import annotations
@@ -24,7 +24,11 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from okf_lib.document import OKFDocument, OKFDocumentError
 
-_RESERVED = {"index.md", "log.md"}
+# CLAUDE.md is the per-bundle schema file, not a concept doc — `/llm-wiki:init`
+# and templates/bundle-CLAUDE.md both create it WITHOUT frontmatter, so without
+# this the plugin's own scaffold fails the plugin's own validator. Hook mode
+# never caught it (it skips frontmatter-less files); full-bundle mode did.
+_RESERVED = {"index.md", "log.md", "CLAUDE.md"}
 
 
 def _check_file_strict(path: Path, bundle_root: Path) -> list[str]:
