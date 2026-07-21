@@ -34,6 +34,30 @@ The scheduled poll and manual run need **no setup**. For the instant `repository
 
 If the token is missing or expires, the daily poll still keeps the plugin current.
 
+## Usage tracking
+
+The plugin counts how often each of its skills is invoked, so you can see which ones earn their place and which have gone cold.
+
+A `PostToolUse` hook increments a counter on every `Skill` call, and a `SessionEnd` hook commits and pushes the result once per session — one commit per session rather than one per invocation. Only skills that ship in this plugin are counted; a `Skill` call into another plugin is ignored, and `active-skills:gcloud` and `gcloud` share a single counter.
+
+Tracking is **opt-in**. Set `ACTIVE_SKILLS_USAGE_REPO` to a git work tree and counts are written to `skill-usage.json` at its root:
+
+```json
+{
+  "systematic-debugging": { "count": 12, "last_used_at": "2026-07-21T19:49:08Z" }
+}
+```
+
+Set it in `~/.claude/settings.json`, which keeps the machine-specific path out of the published plugin:
+
+```json
+"env": { "ACTIVE_SKILLS_USAGE_REPO": "/path/to/agent-skills" }
+```
+
+With the variable unset, counts fall back to `~/.claude/active-skills-usage.json` and no git command runs. The counts file deliberately lives at the repo *root* and never inside `active-skills/` — that directory is exact-mirrored into this plugin, so a counts file there would cut a release on every skill invocation.
+
+Both hooks exit 0 on every path, including malformed input, a missing or non-git repo, and a failed push. A failed push leaves the commit for the next session. The commit is scoped with `git commit --only` to that one file, so unrelated staged work in the repo is left alone, and the sync skips a repo that is mid-merge or mid-rebase.
+
 ## Skills
 
 Source: [`mlarkin00/agent-skills`](https://github.com/mlarkin00/agent-skills) → `active-skills/`.
