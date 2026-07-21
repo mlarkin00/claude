@@ -42,12 +42,17 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 
 - A plugin's `version` MUST be identical in its `plugin.json` and its `marketplace.json` entry. The workflows write both; hand edits MUST too.
 - Adding or removing a plugin means three edits: the directory, the `marketplace.json` entry, and the `PLUGINS` list in `release.yml`. Missing the third leaves a stale name in the loop that drives releases.
-- Never bump a version by hand. Every plugin is workflow-versioned; a manual bump races the bot.
+- Never bump a version by hand for a plugin in a workflow's `PLUGINS` list — a manual bump races the bot.
+- `active-skills` is the exception, and an incomplete one: only changes under `active-skills/skills/` get versioned (by the sync job). Changes to its `hooks/`, `scripts/`, or `sync/` are versioned by nothing. Bump `plugin.json` and `marketplace.json` by hand, and know that no tag or GitHub release is cut until some later sync fires. `active-skills-v0.2.0` is the existing example of a version that shipped untagged this way.
 - Doc-only and workflow-only changes do not trigger a release (`release.yml` filters `README.md` and `.github/`).
 
 ## Architecture & Constraints
 
 **Two independent release paths.** `release.yml` fires on every push to `main`, patch-bumps any plugin in its `PLUGINS` list with release-relevant changes, commits as `github-actions[bot]`, tags `<plugin>-v<version>`, and cuts a GitHub release. It guards against its own push with `if: github.actor != 'github-actions[bot]'`. `sync-active-skills.yml` is separate and owns `active-skills` end to end.
+
+`active-skills` MUST stay out of `release.yml`. The sync job pushes through a rebase-retry loop that is only correct because it is the sole writer of that plugin's version; a second versioner would let a retry rebase onto a competing bump and produce conflicting or duplicate `active-skills-v<N>` tags.
+
+**The sync job only bumps when its `rsync` changes something, and `rsync` only writes `skills/`.** So `active-skills/hooks/`, `scripts/`, and `sync/` are real source that no workflow versions or releases — see Style & Conventions for how to handle a change there.
 
 **`active-skills/skills/` is a mirror, not source.** `sync-active-skills.yml` exact-mirrors `mlarkin00/agent-skills:active-skills/` into it on `repository_dispatch`, a daily 06:17 UTC poll, or manual run — adds, updates, **and deletes** to match. Edits made here are silently reverted on the next sync. Change skills in `mlarkin00/agent-skills`.
 
