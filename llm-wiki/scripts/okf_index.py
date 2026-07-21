@@ -146,7 +146,20 @@ def regenerate_indexes(
             continue
 
         index_path = directory / _INDEX_FILE
-        index_path.write_text(_build_index_text(entries), encoding="utf-8")
+        text = _build_index_text(entries)
+        if directory == bundle_root:
+            # The root index.md is the bundle MARKER. Per the spec it is the only
+            # index.md carrying frontmatter, and `okf_version` is what identifies
+            # a directory as a bundle root. Regenerating MUST preserve it —
+            # dropping it silently unmarks the bundle, which breaks every
+            # consumer that detects a root by walking up for this key (the
+            # validate-on-write hook's scoping among them).
+            version = "0.1"
+            existing = _load_doc(index_path) if index_path.exists() else None
+            if existing is not None:
+                version = str(existing.frontmatter.get("okf_version") or version)
+            text = f'---\nokf_version: "{version}"\n---\n\n{text}'
+        index_path.write_text(text, encoding="utf-8")
         written.append(index_path)
 
         if directory == bundle_root:
