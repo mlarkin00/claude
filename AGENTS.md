@@ -43,25 +43,23 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 - A plugin's `version` MUST be identical in its `plugin.json` and its `marketplace.json` entry. The workflows write both; hand edits MUST too.
 - Adding or removing a plugin means three edits: the directory, the `marketplace.json` entry, and the `PLUGINS` list in `release.yml`. Missing the third leaves a stale name in the loop that drives releases.
 - Never bump a version by hand for a plugin in a workflow's `PLUGINS` list — a manual bump races the bot.
-- `active-skills` is the exception, and an incomplete one: only changes under `active-skills/skills/` get versioned (by the sync job). Changes to its `hooks/`, `scripts/`, or `sync/` are versioned by nothing. Bump `plugin.json` and `marketplace.json` by hand, and know that no tag or GitHub release is cut until some later sync fires. `active-skills-v0.2.0` is the existing example of a version that shipped untagged this way.
+- `active-skills` is versioned differently: its version is owned by the source repo `mlarkin00/active-skills`, and `sync-active-skills.yml` copies it into `marketplace.json`. Bump it there, not here. It is not in `release.yml`.
 - Doc-only and workflow-only changes do not trigger a release (`release.yml` filters `README.md` and `.github/`).
 
 ## Architecture & Constraints
 
-**Two independent release paths.** `release.yml` fires on every push to `main`, patch-bumps any plugin in its `PLUGINS` list with release-relevant changes, commits as `github-actions[bot]`, tags `<plugin>-v<version>`, and cuts a GitHub release. It guards against its own push with `if: github.actor != 'github-actions[bot]'`. `sync-active-skills.yml` is separate and owns `active-skills` end to end.
+**Two independent release paths.** `release.yml` fires on every push to `main`, patch-bumps any plugin in its `PLUGINS` list with release-relevant changes, commits as `github-actions[bot]`, tags `<plugin>-v<version>`, and cuts a GitHub release. It guards against its own push with `if: github.actor != 'github-actions[bot]'`. `sync-active-skills.yml` is separate and owns `active-skills`.
 
-`active-skills` MUST stay out of `release.yml`. The sync job pushes through a rebase-retry loop that is only correct because it is the sole writer of that plugin's version; a second versioner would let a retry rebase onto a competing bump and produce conflicting or duplicate `active-skills-v<N>` tags.
+`active-skills` MUST stay out of `release.yml`. The sync job commits to `main` on its own; a second versioner would let a rebase race onto a competing bump and produce conflicting or duplicate `active-skills-v<N>` tags.
 
-**The sync job only bumps when its `rsync` changes something, and `rsync` only writes `skills/`.** So `active-skills/hooks/`, `scripts/`, and `sync/` are real source that no workflow versions or releases — see Style & Conventions for how to handle a change there.
+**The whole of `active-skills/` is a mirror, not source.** `sync-active-skills.yml` mirrors the entire `mlarkin00/active-skills` repo into it — adds, updates, **and deletes** to match — on `repository_dispatch`, a daily 06:17 UTC poll, or manual run. There is no hand-maintained content here: usage tracking is its own `skill-usage` plugin, so nothing in `active-skills/` is authored in this repo. Every edit here is reverted on the next sync. Change skills in `mlarkin00/active-skills`.
 
-**`active-skills/skills/` is a mirror, not source.** `sync-active-skills.yml` exact-mirrors `mlarkin00/agent-skills:active-skills/` into it on `repository_dispatch`, a daily 06:17 UTC poll, or manual run — adds, updates, **and deletes** to match. Edits made here are silently reverted on the next sync. Change skills in `mlarkin00/agent-skills`.
+The version is owned by the source repo's `plugin.json`; the sync copies it into `marketplace.json` and warns if content changed without a bump. This mirror exists so this repo is the single install point for both runtimes: Claude via the marketplace entry, Antigravity via `agy plugin install https://github.com/mlarkin00/claude`, which bulk-installs every plugin physically present — hence `active-skills` must be present, not merely referenced.
 
-Everything in `active-skills/` *outside* `skills/` — `hooks/`, `scripts/`, `sync/`, `README.md`, `.claude-plugin/` — is real source and is safe to edit here.
-
-**Expect the remote to move under you.** A push to `mlarkin00/agent-skills` touching `active-skills/**` dispatches here, and the sync bot commits to `main` on its own. A local push racing it gets rejected; rebase, never force.
+**Expect the remote to move under you.** A push to `mlarkin00/active-skills` dispatches here, and the sync bot commits to `main` on its own. A local push racing it gets rejected; rebase, never force.
 
 **Never:**
-- Edit anything under `active-skills/skills/` — it is overwritten by the mirror
+- Edit anything under `active-skills/` — the whole directory is overwritten by the mirror; change skills in `mlarkin00/active-skills`
 - Hand-bump a version for a plugin listed in a workflow's `PLUGINS`
 - Leave a deleted plugin's name in `release.yml` — under `set -euo pipefail` a `jq` read of its missing `plugin.json` aborts the release step
 - Force-push `main` — the release and sync bots both commit here

@@ -1,66 +1,52 @@
 # active-skills
 
-Installs the full set of agent skills from the [`mlarkin00/agent-skills`](https://github.com/mlarkin00/agent-skills) repository (the `active-skills/` directory) as a single Claude Code plugin.
+A curated set of agent skills, installable as a plugin in both Claude Code and Antigravity. **This repository is the source of truth — clone it to author skills.** The [`mlarkin00/claude`](https://github.com/mlarkin00/claude) marketplace mirrors it automatically, so users install everything from that one place and never clone this repo.
 
-The skills are **vendored** — a copy lives under [`skills/`](./skills) in this plugin — because a marketplace plugin must physically contain the skills it ships. That copy is kept current automatically (see [Auto-sync](#auto-sync) below), so you never edit `skills/` by hand.
+The repository root *is* the plugin. Claude Code reads `.claude-plugin/plugin.json`; Antigravity reads `plugin.json`. The two manifests coexist and each carries its own version, so one directory serves both runtimes.
+
+Everything here is skills or skill-authoring tooling. Usage tracking lives in a separate `skill-usage` plugin, deliberately: keeping plugin machinery out of this repo keeps it a clean place to write skills.
 
 ## Install
 
-From the `mlarkin00-claude` marketplace:
+**Claude Code** — via the [`mlarkin00-claude`](https://github.com/mlarkin00/claude) marketplace:
 
 ```
 /plugin marketplace add mlarkin00/claude
 /plugin install active-skills@mlarkin00-claude
 ```
 
-Once installed, every skill is available and namespaced under this plugin, e.g. `active-skills:systematic-debugging`.
+Skills are namespaced under the plugin, e.g. `active-skills:systematic-debugging`.
 
-## Auto-sync
+**Antigravity** — installs straight from the repository URL:
 
-The vendored skills track the source repo automatically. Two workflows cooperate:
-
-1. **`notify-plugin.yml`** (lives in `mlarkin00/agent-skills`) — on any push that touches `active-skills/**`, it sends a [`repository_dispatch`](https://docs.github.com/actions/reference/events-that-trigger-workflows#repository_dispatch) event (`event_type: active-skills-updated`) to this repo. This gives near-instant updates. A reference copy of this workflow is kept at [`sync/notify-plugin.yml`](./sync/notify-plugin.yml).
-2. **`sync-active-skills.yml`** (lives in `mlarkin00/claude`, this repo) — on that dispatch (and also on a **daily schedule** and via **manual run** as fallbacks), it clones the source repo, mirrors `active-skills/` into `active-skills/skills/` (adds, updates, **and deletes** to match exactly), regenerates this README's skill list, and — if anything changed — bumps the plugin version, updates `marketplace.json`, commits, tags, and cuts a GitHub release.
-
-So adding, deleting, or editing a skill in the source repo results in a new plugin release with the vendored `skills/` in lockstep.
-
-### One-time setup for instant (event-driven) updates
-
-The scheduled poll and manual run need **no setup**. For the instant `repository_dispatch` path, add a token to the *source* repo so it can dispatch to this one:
-
-1. Create a fine-grained or classic PAT with **`repo`** scope (or fine-grained `contents: read` + `metadata: read`, plus the ability to dispatch) on `mlarkin00/claude`.
-2. In `mlarkin00/agent-skills`, add it as an Actions secret named **`CLAUDE_REPO_TOKEN`**.
-3. Ensure `sync/notify-plugin.yml` is installed at `.github/workflows/notify-plugin.yml` in `mlarkin00/agent-skills`.
-
-If the token is missing or expires, the daily poll still keeps the plugin current.
-
-## Usage tracking
-
-The plugin counts how often each of its skills is invoked, so you can see which ones earn their place and which have gone cold.
-
-A `PostToolUse` hook increments a counter on every `Skill` call, and a `SessionEnd` hook commits and pushes the result once per session — one commit per session rather than one per invocation. Only skills that ship in this plugin are counted; a `Skill` call into another plugin is ignored, and `active-skills:gcloud` and `gcloud` share a single counter.
-
-Tracking is **opt-in**. Set `ACTIVE_SKILLS_USAGE_REPO` to a git work tree and counts are written to `skill-usage.json` at its root:
-
-```json
-{
-  "systematic-debugging": { "count": 12, "last_used_at": "2026-07-21T19:49:08Z" }
-}
+```
+agy plugin install https://github.com/mlarkin00/active-skills
 ```
 
-Set it in `~/.claude/settings.json`, which keeps the machine-specific path out of the published plugin:
+## Authoring
 
-```json
-"env": { "ACTIVE_SKILLS_USAGE_REPO": "/path/to/agent-skills" }
+Each skill is a directory under `skills/` containing a `SKILL.md`. That is the whole contract — `skills/` must contain **nothing but skill directories**, because Antigravity installs every entry there as a skill and a loose file becomes a phantom skill in its UI. The eval suite lives in `evals/` for that reason.
+
+After adding, removing, or retitling a skill, regenerate the inventory below:
+
+```bash
+bash scripts/gen-readme.sh
 ```
 
-With the variable unset, counts fall back to `~/.claude/active-skills-usage.json` and no git command runs. The counts file deliberately lives at the repo *root* and never inside `active-skills/` — that directory is exact-mirrored into this plugin, so a counts file there would cut a release on every skill invocation.
+To publish: **bump the `version` in `plugin.json` and `.claude-plugin/plugin.json`, then push to `main`.** A sync workflow in `mlarkin00/claude` mirrors the change into the marketplace and updates its `marketplace.json` to the new version. The bump is what matters — plugin caches are version-keyed, so a skill change shipped without a version bump will not reach anyone. The sync surfaces a warning when content changes without a bump.
 
-Both hooks exit 0 on every path, including malformed input, a missing or non-git repo, and a failed push. A failed push leaves the commit for the next session. The commit is scoped with `git commit --only` to that one file, so unrelated staged work in the repo is left alone, and the sync skips a repo that is mid-merge or mid-rebase.
+## Layout
+
+| Path | Purpose |
+|---|---|
+| `skills/` | The skills. Only skill directories belong here. |
+| `evals/` | Eval suite, kept out of `skills/` on purpose. |
+| `scripts/gen-readme.sh` | Regenerates the inventory below. |
+| `sidecars/check-updates/` | Antigravity: periodic update check. |
+| `tests/` | Tests for the update-check sidecar. |
+| `.claude-plugin/plugin.json`, `plugin.json` | The two runtime manifests. |
 
 ## Skills
-
-Source: [`mlarkin00/agent-skills`](https://github.com/mlarkin00/agent-skills) → `active-skills/`.
 
 <!-- SKILLS:START -->
 **39 skills** (auto-generated — do not edit by hand):

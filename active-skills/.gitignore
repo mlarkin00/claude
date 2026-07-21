@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+
+# Transient siblings of a usage-counts file, if a counts destination is ever
+# configured to point here. The counts themselves are private and must never
+# be committed to this public repo.
+.skill-usage.lock
+.skill-usage-*.tmp
+skill-usage.json

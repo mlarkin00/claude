@@ -1,9 +1,21 @@
 name: Sync active-skills
 
-# Keeps active-skills/skills/ mirrored to mlarkin00/agent-skills (active-skills/).
+# Mirrors the mlarkin00/active-skills repo (the skills source of truth) into
+# active-skills/ here, so this marketplace is the single install point for both
+# runtimes: Claude via the marketplace entry, Antigravity via a bulk `agy plugin
+# install` of this repo, which needs the plugin physically present.
+#
+# active-skills/ is a PURE MIRROR — it contains no hand-maintained plugin logic
+# (usage tracking lives in the separate skill-usage plugin), so the whole source
+# repo is mirrored wholesale and nothing here is authored by hand.
+#
+# The source manifest owns the version. This workflow copies it into
+# marketplace.json; it does NOT auto-increment. Shipping a skill change therefore
+# requires bumping the source plugin.json — the workflow warns loudly when content
+# changed without a bump, since version-keyed caches would otherwise not refetch.
+#
 # Runs on: a repository_dispatch from the source repo (instant), a daily poll
-# (fallback), and manual dispatch. When the mirror changes, bumps the plugin
-# version, updates marketplace.json, commits, tags, and cuts a release.
+# (fallback), and manual dispatch.
 on:
   repository_dispatch:
     types: [active-skills-updated]
@@ -16,8 +28,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  SOURCE_REPO: mlarkin00/agent-skills
-  SOURCE_PATH: active-skills
+  SOURCE_REPO: mlarkin00/active-skills
   PLUGIN: active-skills
 
 jobs:
@@ -31,15 +42,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The source repo is private, so authenticate with a read-scoped PAT
-      # (secret SKILLS_SRC_TOKEN). The default GITHUB_TOKEN is scoped to this repo
-      # and gets a 404 on the source. actions/checkout handles auth cleanly; a bare
-      # `git clone` prompts for credentials on the runner.
+      # The source repo is public, so the default GITHUB_TOKEN can read it — no PAT.
       - name: Checkout source skills repo
         uses: actions/checkout@v4
         with:
-          repository: mlarkin00/agent-skills
-          token: ${{ secrets.SKILLS_SRC_TOKEN }}
+          repository: ${{ env.SOURCE_REPO }}
           path: .source
           fetch-depth: 1
           persist-credentials: false
@@ -47,19 +54,16 @@ jobs:
       - name: Record source revision
         run: echo "SOURCE_SHA=$(git -C .source rev-parse HEAD)" >> "$GITHUB_ENV"
 
-      - name: Mirror skills into the plugin
+      - name: Mirror the source repo into the plugin
         run: |
           set -euo pipefail
-          SRC=".source/${SOURCE_PATH}/"
-          DEST="${PLUGIN}/skills/"
-          if [ ! -d "$SRC" ]; then
-            echo "::error::Source path $SRC not found in ${SOURCE_REPO}"; exit 1
-          fi
+          DEST="${PLUGIN}/"
           mkdir -p "$DEST"
-          # Exact mirror (add/update/delete). Anchored '/.gitignore' drops only the
-          # source repo's top-level ignore file, not any skill's nested one.
-          rsync -a --delete --exclude='/.gitignore' "$SRC" "$DEST"
-          bash "${PLUGIN}/scripts/gen-readme.sh"
+          # Whole-repo mirror (add/update/delete). Exclude the source's own git
+          # metadata and CI — active-skills/ is a plugin directory, not a repo.
+          rsync -a --delete \
+            --exclude='.git/' --exclude='.github/' \
+            ".source/" "$DEST"
 
       - name: Detect changes
         id: diff
@@ -67,13 +71,13 @@ jobs:
           set -euo pipefail
           if git status --porcelain -- "${PLUGIN}" | grep -q .; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Skill changes detected:"; git status --porcelain -- "${PLUGIN}"
+            echo "Changes detected:"; git status --porcelain -- "${PLUGIN}"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Already up to date with ${SOURCE_REPO}@${SOURCE_SHA}."
           fi
 
-      - name: Bump, commit, tag, release
+      - name: Sync version, commit, tag, release
         if: steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -82,26 +86,30 @@ jobs:
           MANIFEST="${PLUGIN}/.claude-plugin/plugin.json"
           MARKETPLACE=".claude-plugin/marketplace.json"
 
+          # The source manifest is authoritative for the version.
           VERSION=$(jq -r '.version' "$MANIFEST")
-          IFS='.' read -r major minor patch <<< "$VERSION"
-          NEW="$major.$minor.$((patch + 1))"
-          echo "${PLUGIN}: $VERSION -> $NEW"
+          MK_VERSION=$(jq -r --arg n "$PLUGIN" \
+            '.plugins[] | select(.name == $n) | .version' "$MARKETPLACE")
 
-          jq --arg v "$NEW" '.version = $v' "$MANIFEST" > tmp && mv tmp "$MANIFEST"
-          jq --arg n "$PLUGIN" --arg v "$NEW" \
+          # Warn loudly on the forgot-to-bump case: content moved but the version
+          # did not, so version-keyed caches will not refetch. Not fatal — the
+          # mirror still lands so the repo stays consistent — but surfaced.
+          if [ "$VERSION" = "$MK_VERSION" ]; then
+            echo "::warning::active-skills content changed but version is still" \
+              "$VERSION — caches will not refetch. Bump the version in" \
+              "${SOURCE_REPO} plugin.json to ship."
+          fi
+
+          jq --arg n "$PLUGIN" --arg v "$VERSION" \
             '(.plugins[] | select(.name == $n) | .version) = $v' \
             "$MARKETPLACE" > tmp && mv tmp "$MARKETPLACE"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "${PLUGIN}" "$MARKETPLACE"
-          git commit -m "chore(${PLUGIN}): sync skills from ${SOURCE_REPO}@${SOURCE_SHA:0:7} (v$NEW)"
+          git commit -m "chore(${PLUGIN}): sync from ${SOURCE_REPO}@${SOURCE_SHA:0:7} (v$VERSION)"
 
-          # Push to main, rebasing if another writer (release.yml bot, memory bot,
-          # a human) landed a commit during this run. Only sync/ bumps this plugin's
-          # version and concurrency serializes syncs, so a rebase only pulls in
-          # unrelated changes and never touches $NEW. Tag AFTER the push so the tag
-          # points at the final (possibly rebased) commit.
+          # Push to main, rebasing if another writer landed a commit during this run.
           pushed=false
           for attempt in 1 2 3 4 5; do
             if git push origin HEAD:main; then pushed=true; break; fi
@@ -118,8 +126,15 @@ jobs:
             echo "::error::could not fast-forward main after 5 attempts"; exit 1
           fi
 
-          TAG="${PLUGIN}-v$NEW"
-          git tag "$TAG"
-          git push origin "$TAG"
-          gh release create "$TAG" --title "$TAG" \
-            --notes "Synced \`${SOURCE_PATH}/\` from ${SOURCE_REPO}@${SOURCE_SHA}."
+          # Tag and release only when the version is new, so a content-only sync
+          # (no bump) does not collide with an existing tag.
+          TAG="${PLUGIN}-v$VERSION"
+          if git rev-parse "$TAG" >/dev/null 2>&1 || \
+             git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; skipping tag and release."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+            gh release create "$TAG" --title "$TAG" \
+              --notes "Synced from ${SOURCE_REPO}@${SOURCE_SHA}."
+          fi
