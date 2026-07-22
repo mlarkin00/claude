@@ -4,7 +4,7 @@
 
 - [x] **[P0]** This plugin installed with **zero hooks** under Antigravity, so it never loaded or saved context there. *(2026-07-22: fixed — added `hooks.json` plus `scripts/agy_load_context.py`, which gates the loader on `conversationId` because Antigravity's `PreInvocation` fires before every model call. Root cause and evidence in `.agents/TODO.md` at the repo root.)*
 
-- [ ] **[P0]** `save_context.py` reads `transcriptPath` (Antigravity camelCase) and never `transcript_path`, so **session-end save is a silent no-op under Claude Code** — the Stop hook runs, finds no transcript, and returns. The tests feed the Antigravity key in all four cases and so never catch it. Full evidence and fix in the root `.agents/TODO.md`.
+- [x] **[P0]** `save_context.py` reads `transcriptPath` (Antigravity camelCase) and never `transcript_path`, so **session-end save is a silent no-op under Claude Code** — the Stop hook runs, finds no transcript, and returns. The tests feed the Antigravity key in all four cases and so never catch it. *(2026-07-22: fixed — accepts both keys; verified against a real Claude transcript. Full evidence in the root `.agents/TODO.md`.)*
 
 ## P1 — Important / Unblocking
 

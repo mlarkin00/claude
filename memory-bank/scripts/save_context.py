@@ -4,7 +4,7 @@ import json
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from resolve_scope import resolve_user_id, resolve_project_id
+from resolve_scope import resolve_user_id
 from config import get_plugin_config
 
 def extract_text(content):
@@ -55,9 +55,14 @@ def run():
     except Exception:
         return
 
-    transcript_path = input_data.get('transcriptPath')
-    workspace_paths = input_data.get('workspacePaths', [])
-    workspace_path = workspace_paths[0] if workspace_paths else None
+    # This hook serves both runtimes and they key the payload differently:
+    # Antigravity uses protojson camelCase (`transcriptPath`), Claude Code uses
+    # snake_case (`transcript_path`). Reading only the camelCase one meant the
+    # lookup returned None under Claude Code and the function returned right
+    # below — the Stop hook ran, exited 0, and sent nothing, silently, for as
+    # long as the plugin has existed.
+    transcript_path = (input_data.get('transcriptPath')
+                       or input_data.get('transcript_path'))
 
     if not transcript_path or not os.path.exists(transcript_path):
         return
@@ -91,7 +96,11 @@ def run():
         return
 
     user_hash = resolve_user_id()
-    project_hash = "global"  # default scope for session-end consolidation
+    # Session-end consolidation is always global scope. The workspace path the
+    # payload carries (`workspacePaths` on Antigravity, `cwd` on Claude Code) is
+    # deliberately not read: resolving a project scope here would split the
+    # session's facts away from where the loader looks for them.
+    project_hash = "global"
 
     cfg = get_plugin_config()
     send_generation_request(cfg["project"], cfg["location"], cfg["reasoning_engine_id"],
