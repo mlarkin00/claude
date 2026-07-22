@@ -43,7 +43,8 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 - A plugin's `version` MUST be identical in its `plugin.json` and its `marketplace.json` entry. The workflows write both; hand edits MUST too.
 - Adding or removing a plugin means three edits: the directory, the `marketplace.json` entry, and the `PLUGINS` list in `release.yml`. Missing the third leaves a stale name in the loop that drives releases.
 - Never bump a version by hand for a plugin in a workflow's `PLUGINS` list — a manual bump races the bot.
-- `active-skills` is versioned differently: its version is owned by the source repo `mlarkin00/active-skills`, and `sync-active-skills.yml` copies it into `marketplace.json`. Bump it there, not here. It is not in `release.yml`.
+- `active-skills` is versioned differently: `sync-active-skills.yml` patch-bumps it on every mirrored skill change. It is not in `release.yml`. Both of its manifests (`.claude-plugin/plugin.json` for Claude, `plugin.json` for Antigravity) carry the **same** version — one plugin serves both runtimes.
+- **Hand edits to `active-skills/` outside `skills/` need a hand bump.** The sync only bumps when its own run dirties something, so a change you commit to `sidecars/`, `scripts/`, `tests/`, or a manifest is invisible to it and nothing else versions the plugin. Unbumped means never delivered, because caches are version-keyed. Bump both manifests and `marketplace.json` in the same commit.
 - Doc-only and workflow-only changes do not trigger a release (`release.yml` filters `README.md` and `.github/`).
 
 ## Architecture & Constraints
@@ -52,14 +53,19 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 
 `active-skills` MUST stay out of `release.yml`. The sync job commits to `main` on its own; a second versioner would let a rebase race onto a competing bump and produce conflicting or duplicate `active-skills-v<N>` tags.
 
-**The whole of `active-skills/` is a mirror, not source.** `sync-active-skills.yml` mirrors the entire `mlarkin00/active-skills` repo into it — adds, updates, **and deletes** to match — on `repository_dispatch`, a daily 06:17 UTC poll, or manual run. There is no hand-maintained content here: usage tracking is its own `skill-usage` plugin, so nothing in `active-skills/` is authored in this repo. Every edit here is reverted on the next sync. Change skills in `mlarkin00/active-skills`.
+**`active-skills/` is a real plugin; only its `skills/` is a mirror.** The manifests, `scripts/`, `sidecars/`, `tests/`, `README.md`, and `AGENTS.md` are hand-maintained **here** and are yours to edit. `active-skills/skills/` is the rsync target and is overwritten on every sync — change skills in `mlarkin00/active-skills`, never here.
 
-The version is owned by the source repo's `plugin.json`; the sync copies it into `marketplace.json` and warns if content changed without a bump. This mirror exists so this repo is the single install point for both runtimes: Claude via the marketplace entry, Antigravity via a clone of this repo bulk-installed with `agy plugin install <clone>` — which reports `Found bulk plugins directory` and installs every plugin physically present, hence `active-skills` must be present, not merely referenced. (There is no ad-hoc agy install from a repo URL, and `agy plugin import claude` does not work; the local clone is the proven path.)
+`sync-active-skills.yml` runs on `repository_dispatch` from the source repo, a daily 06:17 UTC poll, or manual dispatch. It selects skills by contract: **a skill is a top-level directory in the source repo containing a `SKILL.md`.** Anything else at that root (`README.md`, `.github/`, a future `docs/`) is skipped, so the authoring repo can hold non-skill content without shipping phantom skills — Antigravity installs *every* entry under `skills/` as a skill. A directory missing its `SKILL.md` is skipped silently; the run logs a `::notice::` naming what it skipped.
+
+The rsync destination is `active-skills/skills/`, which is what makes the plugin's own files safe: `--delete` cannot reach one level up. That scoping is load-bearing, not stylistic — an earlier whole-directory mirror ran against a restructured source, flattened the skills to the plugin root, deleted the manifests and `sidecars/`, and **reported success** (`716fb23`, recovered in `0ca72e7`). The workflow also aborts if the source yields zero skills, because `--delete` would otherwise empty the plugin and commit it as a success.
+
+This vendoring exists so this repo is the single install point for both runtimes: Claude via the marketplace entry, Antigravity via a clone of this repo bulk-installed with `agy plugin install <clone>` — which reports `Found bulk plugins directory` and installs every plugin physically present, hence `active-skills` must be present, not merely referenced. (There is no ad-hoc agy install from a repo URL, and `agy plugin import claude` does not work; the local clone is the proven path.)
 
 **Expect the remote to move under you.** A push to `mlarkin00/active-skills` dispatches here, and the sync bot commits to `main` on its own. A local push racing it gets rejected; rebase, never force.
 
 **Never:**
-- Edit anything under `active-skills/` — the whole directory is overwritten by the mirror; change skills in `mlarkin00/active-skills`
+- Edit anything under `active-skills/skills/` — it is the mirror and is overwritten on the next sync; change skills in `mlarkin00/active-skills`
+- Change the source layout `sync-active-skills.yml` reads without fixing the workflow first — that ordering is what caused `716fb23`
 - Hand-bump a version for a plugin listed in a workflow's `PLUGINS`
 - Leave a deleted plugin's name in `release.yml` — under `set -euo pipefail` a `jq` read of its missing `plugin.json` aborts the release step
 - Force-push `main` — the release and sync bots both commit here
