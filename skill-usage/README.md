@@ -13,10 +13,11 @@ Works in both Claude Code and Antigravity, and ships **no skills of its own** â€
 /plugin install skill-usage@mlarkin00-plugins
 ```
 
-**Antigravity:**
+**Antigravity:** clone the marketplace repo once, then bulk-install from it â€”
 
-```
-agy plugin install https://github.com/mlarkin00/plugins
+```bash
+git clone https://github.com/mlarkin00/plugins
+agy plugin install ./plugins
 ```
 
 ## Configure
