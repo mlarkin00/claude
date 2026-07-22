@@ -1,36 +1,29 @@
 {
-  "skill_name": "designing-prompts",
+  "skill_name": "prompt-design",
   "evals": [
     {
-      "prompt": "Improve this prompt for code review: 'Review this code for bugs and tell me what you think.'",
-      "trap": "Agent adds a generic 'Expert Developer' role and vague 'best practices' without specific constraints or XML structure.",
-      "assertions": [
-        "Description starts with 'Use when...' or 'Use this skill when...'",
-        "Output includes nested XML tags for structure",
-        "Output replaces vague terms with quantitative constraints (e.g., 'exactly 5 issues')",
-        "Output identifies the target model architecture (Standard vs. Reasoning)",
-        "Output name follows a simple, descriptive kebab-case pattern (e.g., 'code-review-bugs' or 'code-review-bugs-refine')"
-      ]
+      "id": 0,
+      "name": "rich-request-generate",
+      "prompt": "I need a prompt I can paste into Gemini that writes our sprint retro summary. It goes out to the eng leadership staff meeting, needs to stay under 300 words, and should have three sections: what shipped, what slipped, what we're changing next sprint. I've got last sprint's retro doc that came out well and I can paste it in as an example of the format. Nobody wants to read hedging language so it should be blunt about what slipped.",
+      "expected_output": "A copy-pasteable TCREI prompt block ([TASK]/[CONTEXT]/[REFERENCES] or XML equivalent) with an action verb + specific persona + named output format in Task, the audience/word limit/three sections/blunt tone in Context, and a slot for the user's prior retro doc in References. No unnecessary interview — audience, constraints, and ground truth were all supplied.",
+      "trap": "Agent writes the retro summary itself instead of a prompt, or emits a prompt buried in paragraphs of explanation, or drops the 300-word limit and the three named sections.",
+      "files": []
     },
     {
-      "prompt": "Create a template for customer support emails: 'I need a template for responding to unhappy customers.'",
-      "trap": "Agent provides a simple template without defining variables or grounding through motivation ('Why').",
-      "assertions": [
-        "Template uses {{variable_name}} for customizable parts",
-        "Template explains the motivation (Why) for specific behaviors",
-        "Template includes a 'Success Criteria' section",
-        "Template anchors primary directives at the beginning or end",
-        "Template name follows a simple, descriptive kebab-case pattern (e.g., 'customer-support-unhappy' or 'support-email-unhappy')"
-      ]
+      "id": 1,
+      "name": "thin-request-interview",
+      "prompt": "make me a prompt for writing release notes",
+      "expected_output": "A short batch of targeted questions closing the audience / constraints / ground-truth gaps (e.g. who reads them, is there a past release note to match, any length or format requirement), each with a suggested default so the user can confirm rather than compose. Should not dump a generic prompt as if the request were fully specified.",
+      "trap": "Agent immediately produces a generic release-notes prompt with invented audience and format, presenting guesses as if they were requirements.",
+      "files": []
     },
     {
-      "prompt": "Refine my system prompt to make it more efficient.",
-      "trap": "Agent adds more instructions instead of removing redundant ones, violating the 'Goldilocks Principle'.",
-      "assertions": [
-        "Audit includes a pressure test: 'Will the agent get this wrong without this specific instruction?'",
-        "Output follows the Goldilocks Principle by avoiding attention dilution",
-        "Output includes a reasoning-based instruction explanation"
-      ]
+      "id": 2,
+      "name": "improve-existing-prompt",
+      "prompt": "This prompt keeps giving me walls of text and I don't know why. Can you fix it? --- 'You are a helpful assistant. Review the customer support ticket and give a good summary. Don't be too long. Try not to miss anything important.'",
+      "expected_output": "A revised prompt block that replaces the generic persona with a specific one, converts 'good'/'not too long'/'not miss anything' into measurable constraints (word or sentence count, named sections/fields), flips the negative constraints to affirmative directives, and notes the missing References component. Followed by a brief list of what changed and why.",
+      "trap": "Agent adds more instructions and a generic 'expert' role without quantifying the vague terms, leaving 'don't be too long' as an unenforceable negative constraint — so the wall-of-text problem is not actually diagnosed.",
+      "files": []
     }
   ]
 }

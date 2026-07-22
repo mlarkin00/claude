@@ -1,5 +1,23 @@
 # Context Engineering Guide Snippets
 
+Patterns for prompts that drive agents and systems, rather than prompts a human pastes into a chat window. TCREI still governs construction — see `../SKILL.md`; this file covers what changes when the consumer is an autonomous agent with tools, long inputs, and a multi-step horizon.
+
+## Contents
+
+- [Foundational Engineering Principles](#foundational-engineering-principles)
+- [Context Engineering](#context-engineering)
+- [Mandatory Best Practices](#mandatory-best-practices-the-golden-rules)
+- [Output Formatting Techniques](#output-formatting-techniques)
+- [Verbosity and Length Control](#verbosity-and-length-control)
+- [Tool Use Patterns](#tool-use-patterns)
+- [Long-Context Patterns](#long-context-patterns)
+- [Agentic System Patterns](#agentic-system-patterns)
+- [Template Variable Design](#template-variable-design)
+- [Empirical Grounding](#empirical-grounding)
+- [Avoiding Overengineering](#avoiding-overengineering)
+- [Verification Checklist](#verification-checklist)
+- [Architecture of Intent Framework](#architecture-of-intent-framework)
+
 ## Foundational Engineering Principles
 
 > Before selecting a role or drafting instructions, you must calibrate your approach based on the model's underlying cognitive architecture.
@@ -43,6 +61,14 @@ Four reliable techniques to control output format:
 
 Positive examples of well-calibrated output outperform negative instructions for verbosity control.
 
+## Verbosity and Length Control
+
+Models calibrate response length to *perceived* task complexity, so a task that looks weighty gets a long answer whether or not one is wanted.
+
+- Provide a **positive example** of well-calibrated output. This outperforms any negative instruction.
+- State length explicitly: "Respond in 2-3 sentences," "under 150 words."
+- For chronic over-explanation: "Provide concise, focused responses. Skip non-essential context."
+
 ## Tool Use Patterns
 
 - **Directive language**: "Use the search tool to find X" beats "Can you look up X?"
@@ -84,7 +110,57 @@ For complex research: develop competing hypotheses, track confidence, self-criti
 
 ### Self-Correction Chain
 
-Generate → review against criteria → refine. Each step is a separate call; intermediate outputs can be logged or branched.
+Generate → review against criteria → refine. Each step is a separate call; intermediate outputs can be logged or branched. This is the most reliable multi-step pattern available, and it is the Evaluate/Iterate half of TCREI expressed as an automated chain.
+
+### Subagent Orchestration
+
+Delegation needs an explicit boundary or agents either never delegate or delegate everything:
+
+```text
+Use subagents when tasks can run in parallel, require isolated context, or involve
+independent workstreams that don't share state. For simple tasks, sequential
+operations, single-file edits, or work where context must carry across steps,
+work directly rather than delegating.
+```
+
+## Template Variable Design
+
+For prompts that get filled programmatically:
+
+- Mark slots as `{{variable_name}}` and state which are required versus optional.
+- Supply an **example value** for each. The example communicates expected granularity — `{{customer_name}}` with the example "Acme Corp (enterprise, 3 open tickets)" tells the caller far more than the slot name alone.
+
+## Empirical Grounding
+
+Agents will answer from priors about a file they never opened. Close that off explicitly:
+
+```text
+<investigate_before_answering>
+Never speculate about content you have not retrieved. If the user references a file
+or resource, fetch it before answering. Make claims only after investigation.
+</investigate_before_answering>
+```
+
+Recommend the available tools by name. An agent that knows a tool exists still needs to be told it is the expected path to accuracy.
+
+## Avoiding Overengineering
+
+```text
+Only make changes that are directly requested or clearly necessary:
+- Scope: no features or abstractions beyond what was asked.
+- Documentation: no comments on code you didn't change.
+- Defensive coding: no error handling for scenarios that can't occur.
+- Abstractions: no helpers for one-time operations.
+```
+
+## Verification Checklist
+
+Before shipping a system or agent prompt:
+
+- **Logic collision** — is it so prescriptive that a reasoning model's own process will fight it? See `tcrei-deep-dive.md` on model architecture.
+- **Pressure test** — for each instruction: would the agent get this wrong without it? If not, delete it. Attention is the scarce resource.
+- **Positive example test** — every "don't do X" that remains should be convertible to a demonstration of the right behavior.
+- **Colleague test** — a colleague with minimal context should not be confused.
 
 ## Architecture of Intent Framework
 
