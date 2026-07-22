@@ -37,7 +37,15 @@ python3 -c "import json;[json.load(open(f)) and print('OK',f) for f in ['.claude
 
 - Each skill MUST live in `skills/<skill-name>/` with a `SKILL.md`, and `skills/` MUST contain **nothing but skill directories**. Antigravity installs every entry there as a skill, so a loose file becomes a phantom skill. `agy plugin validate .` reports the count, so a jump of one is the symptom.
 - Run `gen-readme.sh` after any skill change. The block between `<!-- SKILLS:START -->` and `<!-- SKILLS:END -->` is generated and MUST NOT be hand-edited.
-- **Bump the `version` in both manifests to ship.** Plugin caches are version-keyed; the mirror carries the change, but without a version bump no cache refetches it. The sync workflow warns when content changed but the version did not.
+- **Versions are automatic — do not hand-bump.** `.github/workflows/release.yml` patch-bumps the affected manifest(s) on every push to `main` and tags per runtime. The path→runtime mapping is the whole contract:
+
+  | Changed path | Bumps |
+  |---|---|
+  | `skills/**` | both (`.claude-plugin/plugin.json` + `plugin.json`) |
+  | `sidecars/**` | Antigravity only (`plugin.json`) |
+  | docs, `scripts/`, `tests/`, `.github/` | nothing |
+
+  This exists because plugin caches are version-keyed: an unbumped change is never delivered, so relying on memory to bump was a silent-failure mode. Extend the mapping when a runtime-specific directory is added.
 
 ## Architecture & Constraints
 
@@ -45,7 +53,10 @@ python3 -c "import json;[json.load(open(f)) and print('OK',f) for f in ['.claude
 
 **Do not add usage-tracking code here.** It belongs in `skill-usage`. Counts are personal telemetry and must never be committed to a public repo; `skill-usage.json` is gitignored as a backstop.
 
+**Expect the remote to move under you.** `release.yml` commits a version bump on top of your push, so a follow-up push can be rejected. Rebase, never force.
+
 **Never:**
 - Put a non-skill file directly under `skills/`
 - Hand-edit the generated skill inventory in `README.md`
+- Hand-bump a manifest `version` — `release.yml` owns it, and a manual bump races the bot
 - Commit usage counts

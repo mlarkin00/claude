@@ -33,7 +33,9 @@ After adding, removing, or retitling a skill, regenerate the inventory below:
 bash scripts/gen-readme.sh
 ```
 
-To publish: **bump the `version` in `plugin.json` and `.claude-plugin/plugin.json`, then push to `main`.** A sync workflow in `mlarkin00/plugins` mirrors the change into the marketplace and updates its `marketplace.json` to the new version. The bump is what matters — plugin caches are version-keyed, so a skill change shipped without a version bump will not reach anyone. The sync surfaces a warning when content changes without a bump.
+To publish: **just push to `main`.** A release workflow patch-bumps the affected manifest(s) and tags the release — a change under `skills/` bumps both runtimes, one under `sidecars/` bumps only Antigravity, and docs or tooling bump nothing. Don't hand-edit a `version`; the bot owns it.
+
+That bump is then what ships: a sync workflow in `mlarkin00/plugins` mirrors the change into the marketplace and restamps its `marketplace.json`. The version is what matters, because plugin caches are version-keyed — which is exactly why bumping is automated rather than left to memory.
 
 ## Layout
 
