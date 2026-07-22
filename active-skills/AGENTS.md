@@ -2,7 +2,7 @@
 
 ## Project Goal
 
-Source of truth for a curated set of agent skills, consumed by Claude Code and Antigravity. This is the **authoring** repo — clone it to edit skills. The `mlarkin00/claude` marketplace mirrors it via CI, so users install from that single place (Claude marketplace, or `agy plugin install` of that repo) and never clone this one.
+Source of truth for a curated set of agent skills, consumed by Claude Code and Antigravity. This is the **authoring** repo — clone it to edit skills. The `mlarkin00/plugins` marketplace mirrors it via CI, so users install from that single place (Claude marketplace, or `agy plugin install` of that repo) and never clone this one.
 
 ## Project Context
 
@@ -15,7 +15,7 @@ The repository root **is** the plugin. Two manifests coexist because the runtime
 
 Versions are deliberately independent — one runtime's fix must not force an empty release for the other. Each runtime ignores the other's files.
 
-This repo contains **skills and skill-authoring tooling only**. Usage tracking lives in the separate `skill-usage` plugin in `mlarkin00/claude`. That separation is intentional: plugin machinery here made the repo a poor place to author skills.
+This repo contains **skills and skill-authoring tooling only**. Usage tracking lives in the separate `skill-usage` plugin in `mlarkin00/plugins`. That separation is intentional: plugin machinery here made the repo a poor place to author skills.
 
 ## Operational Commands
 
