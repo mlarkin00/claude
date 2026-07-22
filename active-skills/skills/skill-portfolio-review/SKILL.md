@@ -1,8 +1,6 @@
 ---
 name: skill-portfolio-review
 description: Use when reviewing an ENTIRE collection of agent skills (not one skill) to find clusters of semantically related skills that could be consolidated into a broader "umbrella" skill — e.g. "review all my skills for consolidation", "are any of these skills redundant or overlapping", "which skills can be merged", "my skills library has grown, clean it up", or "consolidate the skill portfolio". This skill scans every skill in a directory, clusters them by semantic similarity, applies the umbrella-class test, and returns an implementation-ready report: the new/consolidated skills to build, the skills to remove, portfolio-level learnings, and exact ordered steps another agent can execute to make the changes. Make sure to use this whenever the user wants their whole skill set audited for redundancy or umbrella-ification, even if they don't say "consolidate". For reviewing or improving a SINGLE skill against best practices use skill-improvement; for authoring one new skill use skill-creator-enhanced.
-metadata:
-  category: code-quality
 ---
 
 # Skill Portfolio Review
