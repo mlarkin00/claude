@@ -11,7 +11,7 @@ This skill guides the initialization of a new project environment, ensuring that
 
 - **Proactive Initialization**: If the agent detects a lack of standard project files (e.g., `.git`, `AGENTS.md`, `package.json`, `go.mod`), it MUST ask the user if they want to set up a new project in the current directory.
 - **Project Root Establishment**: If the user confirms, the current directory MUST be treated as the project-root. All subsequent commands and documentation MUST be relative to this root.
-- **Instruction Coordination**: Once a project is established, the agent MUST immediately invoke the `managing-agent-instructions` skill to generate `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, and `DESIGN.md`.
+- **Instruction Coordination**: Once a project is established, the agent MUST immediately invoke the `managing-agent-instructions` skill to generate `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, `DESIGN.md`, `.agents/TODO.md`, and the `.agents/wiki/` knowledge bundle.
 - **Git Awareness**: If a `.git` directory is missing in the project root, the agent MUST search up to 3 levels of parent directories. If an existing `.git` repository is found in the parent chain, the agent MUST treat that as the source of truth for git operations (e.g., the monorepo root). If no `.git` directory is found at any of these levels, the agent MUST explicitly ask the user if they want to run `git init` in the current directory or provide the path to an existing repository.
 - **Ignore Files**: The agent MUST suggest or create a basic `.gitignore` file to protect sensitive information and avoid bloating the context window with build artifacts.
 
@@ -38,6 +38,14 @@ The following baseline docs MUST be generated as part of the initial setup:
 - **`GEMINI.md` / `CLAUDE.md`**: Assistant-specific instructions (MUST be standalone, individual files, never symlinks). If any already exist as symlinks, de-symlink them via `managing-agent-instructions` (`scripts/analyze-agent-docs.sh --fix`) before writing.
 - **`DESIGN.md`**: Design system tokens and rationale (in the [google/design.md](https://github.com/google-labs-code/design.md) format, required only for projects with a visual UI).
 - **`.agents/TODO.md`**: The initial task backlog.
+- **`.agents/wiki/`**: The knowledge bundle for runtime evidence — findings that cost investigation and aren't derivable from the code (OKF v0.1: `index.md` with `okf_version: "0.1"`, plus a `CLAUDE.md` defining the domain and type vocabulary). Scaffold it in every project: `/llm-wiki:init .agents/wiki` when the `llm-wiki` plugin is installed, by hand otherwise — the format is markdown with YAML frontmatter and does not depend on the plugin. The generated `AGENTS.md` MUST `@`-import its root index:
+
+  ```markdown
+  Runtime evidence — how each rule below was established, and against which
+  version — is an OKF bundle: `@.agents/wiki/index.md`
+  ```
+
+  A bundle without that import does not get read. Details in `managing-agent-instructions` Phase 6 and its `references/knowledge-bundle.md`.
 
 ## Gotchas & Anti-Patterns
 
@@ -49,5 +57,7 @@ The following baseline docs MUST be generated as part of the initial setup:
 | "I'll wait for the user to tell me what commands to put in `AGENTS.md`."           | Proactively search for `package.json`, `Makefile`, etc., to identify the "Golden Path" commands.               |
 | "I'll create the `DESIGN.md` later."                                               | A baseline `DESIGN.md` should be part of the initial setup, even if it's just a one-sentence overview.         |
 | "I'll use Git commands without `git init` first."                                  | Ensure the repo is initialized before attempting other Git operations.                                         |
+| "The project is brand new — there's no evidence yet, so skip `.agents/wiki/`."     | Scaffold it empty. A bundle created on day one gets written to; one deferred until "there's enough" never gets created, and the findings land in prose nobody reads. |
+| "`llm-wiki` isn't installed here, so the bundle isn't an option."                  | The bundle is markdown with YAML frontmatter. Hand-write `index.md` and `CLAUDE.md`; the plugin only automates index/validate/lint. |
 
 

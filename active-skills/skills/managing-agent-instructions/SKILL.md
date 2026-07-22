@@ -1,6 +1,6 @@
 ---
 name: managing-agent-instructions
-description: Use when the user asks to "write a doc", "create agent instructions", "update AGENTS.md", "sync context files", "refine project rules", "update the TODO", "add a task to the backlog", or "update DESIGN.md". Use this skill to manage persistent, high-signal project-specific context in AGENTS.md, GEMINI.md, CLAUDE.md, the project task backlog in .agents/TODO.md, and the design system specification in DESIGN.md.
+description: Use when the user asks to "write a doc", "create agent instructions", "update AGENTS.md", "sync context files", "refine project rules", "update the TODO", "add a task to the backlog", "update DESIGN.md", or "record a lesson learned". Use this skill to manage persistent, high-signal project-specific context in AGENTS.md, GEMINI.md, CLAUDE.md, the project task backlog in .agents/TODO.md, the design system specification in DESIGN.md, and the runtime-evidence knowledge bundle in .agents/wiki/.
 ---
 
 # Managing Agent Instructions
@@ -11,7 +11,7 @@ This skill manages the lifecycle of agent-facing documentation:
 - **Design system** — `DESIGN.md` at project root: machine-readable design tokens (colors, typography, spacing, components) plus human-readable rationale, in the [google/design.md](https://github.com/google-labs-code/design.md) format. Only relevant for projects with a visual UI.
 - **Architecture snapshot** — `ARCH.md` (or `docs/designs/ARCH.md`) at project root: the current, load-bearing system design (component maps, data flows, invariants) an agent should reason from.
 - **Task backlog** — `<project_root>/.agents/TODO.md`: pending work a future session should pick up.
-- **Optional lessons log** — `<project_root>/.agents/INSIGHTS.md`: non-obvious gotchas learned during implementation that aren't derivable from the code.
+- **Knowledge bundle** — `<project_root>/.agents/wiki/`: the runtime-evidence store. An OKF v0.1 bundle, one concept per fact, `@`-imported by the briefing file. Holds the non-obvious findings behind the rules — how each was established and against which version. Supersedes the flat `.agents/INSIGHTS.md`. See `references/knowledge-bundle.md`.
 
 ## Core Mandates
 
@@ -24,6 +24,8 @@ This skill manages the lifecycle of agent-facing documentation:
 - **Design Token Coherence**: `DESIGN.md` MUST reflect the design system currently implemented in the UI. When token values, component specs, or section content diverge from shipped code, update `DESIGN.md` in the same PR or add a `.agents/TODO.md` item to sync. Run `npx @google/design.md lint` after every edit — broken token references (`{category.name}`) are silent bugs.
 - **Architecture ↔ Code Coherence**: `ARCH.md` MUST reflect current shipped architecture. When implementation diverges, update `ARCH.md` in the same PR or add a `.agents/TODO.md` item to sync.
 - **Memory Discipline**: If the project uses the agentic-minions T0-T4 memory system (see detection rules in `references/memory-discipline.md`), `AGENTS.md` MUST contain a **Memory Discipline** section sourced from that template. The section's mandate that `MEMORY.md` is loaded into every session is non-negotiable and MUST appear verbatim. Note: the user-level agent-memory plugin (`~/.claude/memory/`) is a separate concern — it is auto-managed by hooks and requires no per-project documentation.
+- **Bundle Import**: Whenever `.agents/wiki/` exists, the briefing files MUST `@`-import its root index (`@.agents/wiki/index.md`). This is non-negotiable and is not satisfied by a prose pointer — an import is content the harness loads; prose is a decision the agent must make and was observed not making. A bundle without the import is drift and MUST be fixed on sight.
+- **Evidence Discipline**: A finding that **cost investigation to establish and is not derivable from the code** goes in `.agents/wiki/` as its own concept, version-pinned. Rules go in `AGENTS.md`, open work in `.agents/TODO.md`, shipped design in `ARCH.md`. Never restate a bundle concept's body in a briefing file — link to it. See Phase 6.
 - **TODO Hygiene**: Keep `.agents/TODO.md` current — prune items made obsolete by recent changes before adding new ones. Every item MUST carry a `[P0]`, `[P1]`, or `[P2]` tag (see Phase 5 for the scheme). An un-prioritized item is treated as invalid and MUST be fixed on sight.
 
 ## Instructions
@@ -33,6 +35,7 @@ This skill manages the lifecycle of agent-facing documentation:
 [ ] **Identify Existing Docs**: Locate `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, `DESIGN.md`, and any `.claude.local.md` or `.gemini.local.md`.
 [ ] **Detect & De-Symlink Briefing Files**: Run `scripts/analyze-agent-docs.sh <project_root>` to inspect the three briefing files. If any of `AGENTS.md`, `GEMINI.md`, or `CLAUDE.md` is reported as a symlink, run `scripts/analyze-agent-docs.sh --fix <project_root>` to reestablish them as standalone individual files (it dereferences each link's current content into a regular file and removes the link; a dangling link becomes an empty standalone file you must repopulate). Confirm with `ls -l <project_root>` that none of the three remains a symlink before editing any of them. Do this once, up front — never edit a briefing file while it is still a symlink.
 [ ] **Check TODO Backlog**: Read `.agents/TODO.md` if it exists. Note any items that may have been completed or made obsolete by recent code changes.
+[ ] **Check Knowledge Bundle**: Look for `.agents/wiki/index.md`. If it exists, `grep` the briefing files for `@.agents/wiki/index.md` — a bundle with no `@`-import is **drift**, and is the exact failure this phase exists to catch; report it and fix it in Phase 3. Read the root index (titles and descriptions only) to know what evidence already exists before re-deriving it. Note any `.agents/INSIGHTS.md` for migration (Phase 6).
 [ ] **Check Design Drift**: Read `DESIGN.md` (and any `docs/designs/` files it points to). Cross-reference against the current codebase — note divergence (renamed modules, new/removed components, state machine changes).
 [ ] **Analyze Tooling**: Check `package.json`, `Makefile`, or `README.md` for the "Golden Path" commands (build, lint, test).
 [ ] **Spot Redundancy**: Identify any rules in current docs that are already strictly enforced by linters or clearly visible in tool configs.
@@ -254,6 +257,33 @@ Thematic sub-groupings (e.g., `## Setup follow-ups`) may live inside a priority 
 [ ] **Create `.agents/TODO.md`** if it doesn't exist and there are tasks worth capturing.
 [ ] **Audit priorities** when reviewing: anything tagged `[P0]` that isn't actually a bug or broken contract should be re-tagged `[P1]`; anything untagged MUST be tagged or removed.
 
+### 6. Phase 6: Knowledge Bundle Management (`.agents/wiki/`)
+
+Full model, concept-doc shape, and anti-patterns: **`references/knowledge-bundle.md`** — read it before minting or editing a concept.
+
+`.agents/wiki/` is the project's **runtime-evidence** store: an OKF v0.1 bundle, one concept per fact. `AGENTS.md` carries the rules; the bundle carries the evidence behind them — how each was established, against which version, and the symptom that exposed it. It replaces the flat `.agents/INSIGHTS.md`, which loaded whole every session and rotted silently.
+
+**Scope test (MANDATORY)** — a fact belongs in the bundle only if it **cost investigation to establish and is not derivable from the code**. Rules → `AGENTS.md`. Open work → `.agents/TODO.md`. Shipped design → `ARCH.md`. Without this test the bundle becomes a second, worse README.
+
+**Dependency on `llm-wiki` — decided; do not re-litigate.** Always scaffold the bundle. The format is markdown with YAML frontmatter, and the `@`-import plus one-concept-per-fact discipline are the entire value — neither needs the plugin. With `llm-wiki` installed, use `/llm-wiki:init` and the lifecycle commands below; without it, hand-write `index.md`, `CLAUDE.md`, and the concepts to the same shape and note in the bundle's `CLAUDE.md` that the index is hand-maintained. Absence of the plugin is NOT a reason to fall back to a flat file.
+
+**Minting a concept** — one fact per doc. Frontmatter requires a non-empty `type`; always also write `title` and a one-sentence `description` stating a **claim, not a topic** (the description is all a future session sees in the index before deciding to open the doc). State the evidence — the command, the measurement, the symptom — and **pin the claim to the version it was verified against**. Cross-link file-relative only.
+
+**Lifecycle commands** (when `llm-wiki` is available):
+
+```bash
+/llm-wiki:index      # regenerate index.md — after every add, rename, or delete
+/llm-wiki:validate   # §9 conformance — after every edit
+/llm-wiki:lint       # contradictions and stale claims — periodically, and after dependency upgrades
+/llm-wiki:stats      # orphans, broken links, citation coverage
+```
+
+[ ] **Scaffold the bundle** if the project has runtime findings worth keeping and none exists (`/llm-wiki:init .agents/wiki`, or by hand).
+[ ] **Add the `@`-import** to the briefing files whenever a bundle exists — this is the mechanism, not a nicety.
+[ ] **Migrate `.agents/INSIGHTS.md`** if present: split into concepts (applying the scope test — most flat-file entries fail it), then delete the file. Never maintain both.
+[ ] **Regenerate and validate** after any concept is added, renamed, or deleted.
+[ ] **Lint for staleness** when reviewing docs — stale claims are this file type's expected failure mode, not broken links.
+
 ## Gotchas & Anti-Patterns
 
 | Excuse / Failure                                                                     | Reality                                                                                                                                                                                                         |
@@ -270,6 +300,11 @@ Thematic sub-groupings (e.g., `## Setup follow-ups`) may live inside a priority 
 | "I'll skip the priority tag — it's obvious from context which is which."             | Tags are the contract. Context rots. Every item carries `[P0]` / `[P1]` / `[P2]`; an untagged item is malformed and MUST be fixed on sight.                                                                     |
 | "I'll mark it `[P0]` to make sure someone looks at it."                              | P0 is reserved for bugs and broken contracts. Inflating priorities destroys the signal — if everything is P0, nothing is. Most items are P1.                                                                    |
 | "I'll leave this `[P2]` in here forever in case someone eventually cares."           | P2 is for things the project actually wants, just later. If it's been there for months and nobody cares, prune it — don't hoard dead tasks.                                                                     |
+| "I'll add a pointer sentence to CLAUDE.md so the agent knows about the wiki."     | Prose pointers were observed **not firing** — a pointer sat in context for a full session unread, because "I am about to re-derive history" is not a state an agent recognises about itself. The `@`-import is the mechanism; it is content the harness loads, not a decision the agent must make. |
+| "This project doesn't have `llm-wiki`, so I'll put the finding in INSIGHTS.md."   | The bundle format is markdown with YAML frontmatter. Scaffold it anyway and hand-maintain the index; the plugin makes it maintainable at scale, it is not a prerequisite. Never maintain a flat lessons file alongside a bundle.                                                                    |
+| "I'll note the version this was verified against later."                          | An unpinned claim is indistinguishable from a stale one the moment the runtime updates. Runtime facts rotting is the expected failure mode, not a hypothetical. Pin on write.                                                                                                                       |
+| "This finding is small — I'll append it to an existing concept."                  | One concept per fact. Merged facts cannot be individually version-pinned, invalidated, or linked to from a rule.                                                                                                                                                                                    |
+| "The bundle explains the rule, so I'll paste the explanation into AGENTS.md too." | Duplication drifts into contradiction and costs the context the bundle exists to save. Keep the rule terse in `AGENTS.md` and link to the concept.                                                                                                                                                 |
 | "DESIGN.md is close enough — I'll update it next sprint."                            | Stale token values or broken `{category.name}` refs silently corrupt agent reasoning. Update in the same PR or file a TODO, and always run `npx @google/design.md lint`.                                        |
 | "I'll skip lint — it's just a style file."                                           | Broken token cross-references and WCAG contrast failures are silent bugs. Lint is mandatory after every edit.                                                                                                   |
 | "I'll put architecture diagrams and component maps in DESIGN.md."                    | DESIGN.md is a design system (tokens + rationale), not an architecture snapshot. Architecture belongs in `ARCH.md` or `docs/designs/ARCH.md`.                                                                   |

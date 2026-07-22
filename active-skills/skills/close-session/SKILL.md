@@ -23,9 +23,18 @@ Focus on changes this session introduced:
 - New conventions established → update `AGENTS.md`
 - Follow-up tasks discovered → add to `.agents/TODO.md` (with `[P1]` or `[P2]`)
 - Completed tasks → prune from `.agents/TODO.md`
+- **Durable lessons learned → mint a concept in `.agents/wiki/`, not a TODO item** (see below)
 - UI tokens or component changes → update `DESIGN.md` and run `npx @google/design.md lint`
 
 If the session made no architectural or convention changes, a brief read-and-confirm that existing docs are still accurate is sufficient — do not update for its own sake.
+
+### Lessons learned vs. follow-up tasks
+
+A **follow-up task** is work still to do → `.agents/TODO.md`. A **lesson learned** is a finding that cost investigation to establish and is not derivable from the code → a concept in `.agents/wiki/`, version-pinned to what it was verified against.
+
+The trap this exists to prevent: a completed TODO carries the resolution note that explains *why* the fix was what it was, and pruning the task in Step 1 deletes that evidence. Before pruning any completed item, ask whether its resolution passes the scope test — if so, mint the concept **first**, then prune.
+
+If the project has no bundle, scaffold one (`/llm-wiki:init .agents/wiki`, or by hand) and add the `@.agents/wiki/index.md` import to the briefing files. After adding concepts, regenerate and validate (`/llm-wiki:index`, `/llm-wiki:validate`) so the index committed in Step 4 is current. Full model: `managing-agent-instructions` Phase 6.
 
 ## Step 2: Stage and Review Changes
 
@@ -165,6 +174,8 @@ If the user explicitly says "push anyway", "force push", or similar — merge th
 | "Nothing to commit, nothing to do"                           | If the session established new conventions, docs need updating even without code changes.             |
 | "I already know what the docs say"                           | The session may have shifted implicit conventions. Read before declaring docs current.                |
 | "I'll skip managing-agent-instructions — the docs look fine" | "Looks fine" from memory is not the same as confirming currency. Invoke the skill.                    |
+| "The task is done, so I'll just delete it from TODO.md"      | A completed item's resolution note is often the only record of *why*. Mint the concept in `.agents/wiki/` first, then prune. |
+| "I'll write the lesson as a TODO so it's not lost"           | TODOs are work to do; a closed finding sits there forever looking actionable. Lessons are evidence — they belong in the bundle. |
 
 ## Quick Reference
 
