@@ -13,7 +13,7 @@ Each top-level directory is one plugin serving both runtimes from one copy: `.cl
 | `agent-memory`, `llm-wiki`, `memory-bank`, `skill-usage` | `release.yml` (auto) |
 | `active-skills` | `sync-active-skills.yml` (auto) |
 
-Per-plugin briefings: `@llm-wiki/AGENTS.md`, `@memory-bank/AGENTS.md`. Hard-won runtime behaviour: `@.agents/INSIGHTS.md`. Backlog: `@.agents/TODO.md`.
+Per-plugin briefings: `@llm-wiki/AGENTS.md`, `@memory-bank/AGENTS.md`. Backlog: `@.agents/TODO.md`. **Runtime evidence — how each rule below was established, and against which version — is an OKF bundle: `@.agents/wiki/index.md`** (authoring and maintenance: `.agents/wiki/CLAUDE.md`). Open the specific concept before changing a guard.
 
 ## Operational Commands
 

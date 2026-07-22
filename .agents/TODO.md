@@ -6,7 +6,8 @@ items here either span plugins or live in the workflows.
 Everything below was found in the **2026-07-22 post-restructure runtime review**
 (`agy` 1.1.5, Claude Code 2.1.217), which exercised both runtimes end to end.
 What passed is recorded at the bottom so a re-check knows what not to re-derive.
-Durable runtime behaviour learned that day lives in `INSIGHTS.md`, not here.
+Durable runtime behaviour learned that day lives in the OKF bundle at
+`wiki/` (`@.agents/wiki/index.md`), not here — this file is only open tasks.
 
 ## P0 — Address Immediately
 

@@ -1,0 +1,63 @@
+# Runtime Knowledge — OKF Bundle
+
+OKF v0.1 knowledge bundle managed by the `llm-wiki` plugin.
+
+## Domain
+
+Runtime behaviour of the two hosts this repo's plugins target — **Claude Code**
+and **Antigravity (`agy`)** — plus the shell and testing traps that produced false
+confidence while getting there.
+
+Scope test: a fact belongs here if it **cost investigation to establish and is not
+derivable from the code in this repo**. Conventions that follow from these facts
+live in `AGENTS.md`; this bundle is the evidence behind them. Anything a future
+session could learn by reading a file here does not belong.
+
+Every claim is pinned to the versions it was verified against. When `agy` or Claude
+Code updates, run `/llm-wiki:lint` — stale claims are the expected failure mode of
+this bundle, not broken links.
+
+## Directory structure
+
+```
+.agents/wiki/
+├── index.md          # auto-generated catalog (do not edit by hand)
+├── CLAUDE.md         # this file
+├── antigravity/      # agy-specific runtime behaviour
+├── cross-runtime/    # facts spanning both hosts
+└── testing/          # shell and test-harness traps
+```
+
+## Type vocabulary
+
+- `Runtime Behaviour` — how a host actually behaves, as observed.
+- `Pitfall` — a trap that produced a wrong result, with the symptom that exposed it.
+- `Convention` — the rule this repo adopted in response.
+
+## Authoring conventions
+
+- **Frontmatter**: `type` required; always include `title` and a one-sentence
+  `description` — the description is what appears in `index.md` and is therefore
+  what a future session reads before deciding to open the doc. Make it a claim, not
+  a topic.
+- **Evidence over assertion**: state how the fact was established — the command,
+  the measurement, the observed symptom. A claim with no evidence cannot be
+  re-checked when a runtime updates.
+- **Version-pin**: name the version a behaviour was verified against.
+- **Cross-links**: file-relative only (`[x](../antigravity/x.md)`).
+
+## Discoverability
+
+The root `index.md` is `@`-imported by the repo's `AGENTS.md`, so every session
+gets the catalog — titles and descriptions — without loading the bodies. That is
+the mechanism that makes this bundle worth keeping: recognition replaces recall.
+**If that pointer is removed, this bundle stops being read.**
+
+## Maintenance
+
+```
+/llm-wiki:validate   # §9 conformance
+/llm-wiki:index      # regenerate index.md after adding or renaming docs
+/llm-wiki:lint       # semantic health — contradictions and stale claims
+/llm-wiki:stats      # orphans, broken links, citation coverage
+```
