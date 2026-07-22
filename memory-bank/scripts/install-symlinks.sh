@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
-# Creates symlinks from user-level paths into the plugin bundle.
+# Gives the plugin's scripts stable, version-free paths under ~/.claude/scripts,
+# which is how the skills reach them (the plugin cache path is version-keyed and
+# changes on every release).
 # Called on every SessionStart — idempotent and safe to re-run.
 # Requires $CLAUDE_PLUGIN_ROOT to be set by the plugin host.
+#
+# Scripts only. This used to also link the seven skills into ~/.claude/skills as
+# loose .md files, which earned nothing: Claude Code loads them from the
+# installed plugin as memory-bank:<name>, and ~/.claude/skills expects a
+# directory per plugin, so nothing read the copies.
 
 set -euo pipefail
 
@@ -10,10 +17,9 @@ if [[ -z "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
   exit 0
 fi
 
-SKILLS_DIR="$HOME/.claude/skills"
 MB_SCRIPTS_DIR="$HOME/.claude/scripts/memory-bank"
 
-mkdir -p "$SKILLS_DIR" "$MB_SCRIPTS_DIR"
+mkdir -p "$MB_SCRIPTS_DIR"
 
 link_file() {
   local target="$1"
@@ -22,15 +28,6 @@ link_file() {
     ln -sfn "$target" "$link"
   fi
 }
-
-# Skills
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memory-bank/SKILL.md"                 "$SKILLS_DIR/memory-bank.md"
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-add/SKILL.md"                "$SKILLS_DIR/memories-add.md"
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-list/SKILL.md"               "$SKILLS_DIR/memories-list.md"
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-update/SKILL.md"             "$SKILLS_DIR/memories-update.md"
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-delete/SKILL.md"             "$SKILLS_DIR/memories-delete.md"
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-set-project-scope/SKILL.md"  "$SKILLS_DIR/memories-set-project-scope.md"
-link_file "$CLAUDE_PLUGIN_ROOT/skills/memories-curate/SKILL.md"             "$SKILLS_DIR/memories-curate.md"
 
 # Python scripts (stable paths for agent skill calls)
 for script in add_memory list_memories query_memories update_memory delete_memory \

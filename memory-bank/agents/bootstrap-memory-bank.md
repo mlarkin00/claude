@@ -82,9 +82,11 @@ python3 "$PLUGIN_ROOT/scripts/import_cc_memories.py"
 
 ```bash
 bash "$PLUGIN_ROOT/scripts/install-symlinks.sh"
-ls ~/.claude/skills/memory-bank.md ~/.claude/skills/memories-add.md
 ls ~/.claude/scripts/memory-bank/add_memory.py
 ```
+
+Only the scripts are linked. The plugin's skills are loaded from the plugin
+itself, so there is nothing under `~/.claude/skills/` to check.
 
 ## Final summary
 

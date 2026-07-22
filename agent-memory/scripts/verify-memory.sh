@@ -28,10 +28,10 @@ if [[ "$TIER2" -eq 0 ]]; then
   fi
 fi
 
-if [[ ! -f "$HOME/.claude/agents/memory-puller.md" || ! -f "$HOME/.claude/agents/memory-pusher.md" ]]; then
-  echo "[verify-memory] ⚠ Agent delegation files missing from ~/.claude/agents/. Run the bootstrap-memory agent to restore." >&2
-  TIER2=1
-fi
+# No check for ~/.claude/agents/memory-{puller,pusher}.md: install-symlinks.sh no
+# longer creates them. Claude Code loads the plugin's own agents/ directory, so
+# their absence says nothing about the system's health — and treating it as a
+# Tier 2 failure short-circuited the Tier 1 auto-fixes below.
 
 SETTINGS="$HOME/.claude/settings.json"
 if [[ -f "$SETTINGS" ]]; then

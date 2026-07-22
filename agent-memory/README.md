@@ -66,7 +66,7 @@ agent-memory-plugin/
 ├── hooks/
 │   └── hooks.json           SessionStart (pull + verify) and PostToolUse (push) hooks
 ├── scripts/
-│   ├── install-symlinks.sh  Creates ~/.claude/scripts, ~/.claude/agents symlinks
+│   ├── install-symlinks.sh  Links the scripts below into ~/.claude/scripts
 │   ├── memory-pull.sh       git reset --hard origin/main
 │   ├── memory-push.sh       git add *.md && commit && push
 │   └── verify-memory.sh     Health check with Tier 1 auto-fix and Tier 2 alerts

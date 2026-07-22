@@ -7,6 +7,10 @@ You are uninstalling the agent-memory plugin. Work through each step in order. P
 
 ## Step 1: Remove symlinks
 
+The `~/.claude/agents/` and `~/.claude/skills/` entries are no longer created —
+only the scripts are linked now — but they are still removed here so a machine
+set up by an older version is cleaned up properly.
+
 ```bash
 rm -f \
   ~/.claude/scripts/memory-pull.sh \
