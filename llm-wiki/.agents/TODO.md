@@ -2,27 +2,33 @@
 
 Defects found in the 2026-07-22 runtime review are tracked in the marketplace
 backlog (`.agents/TODO.md` at the repo root) rather than here, because their
-root causes are shared with other plugins. Still open: the ten `commands/*.md`
-wrappers shadow their identically-named skills in Claude Code (P1), and
-`commands/stats.md` has unparseable YAML frontmatter (P2).
+root causes are shared with other plugins.
 
 Closed 2026-07-22: the `PostToolUse` validator resolved to an empty path under
 Antigravity (P0). This plugin now carries a root `hooks.json` and a root
 `plugin.json`; `hooks/validate-on-write.sh` reads both runtimes' payload shapes
 and resolves the validator from its own location instead of
-`$CLAUDE_PLUGIN_ROOT`, which Antigravity does not define.
+`$CLAUDE_PLUGIN_ROOT`, which Antigravity does not define. Also closed: the ten
+`commands/*.md` wrappers that shadowed their identically-named skills, deleted in
+`f01e7a7` (which took the unparseable `commands/stats.md` frontmatter with them).
+
+Closed 2026-07-22: **discovery** (P1) and the reserved-filename disagreement
+between `okf_index.py` and `okf_validate.py` (P2). `scripts/okf_discover.py`
+installs and refreshes the mechanism, `/llm-wiki:init` runs it, `/llm-wiki:index`
+re-syncs it, `tests/test_okf_discover.py` covers it, and both runtimes were
+verified to see the catalog in a live session. The premise the item was written
+on turned out to be wrong and is recorded in
+`.agents/wiki/cross-runtime/briefing-file-loading.md`: `@` imports are **not**
+loaded by both runtimes — Claude Code expands them but never reads `AGENTS.md`,
+`agy` reads `AGENTS.md` but never expands them, and a backticked `` `@path` `` is
+inert on both. This repo's own bundle was reachable on neither runtime until the
+fix landed. Reserved names now live in `okf_lib/paths.RESERVED_FILENAMES`.
 
 ## P1 — Important / Unblocking
 
-- [ ] **[P1]** Ship a discoverability mechanism so agents actually read the bundle — currently `/llm-wiki:init` scaffolds the bundle and leaves discovery to a hand-written pointer in the host repo's `CLAUDE.md`, which is a passive trigger that does not reliably fire. **Observed failing 2026-07-21** in `local-minions`: the pointer ("read `.agents/wiki/index.md` before re-deriving history") was in context for a full session and the agent still did not open the index unprompted — "I am about to re-derive history" is not a state an agent recognizes about itself. Proposed fix: have `/llm-wiki:init` offer to install a `SessionStart` hook that injects the bundle's root `index.md` into context (826 bytes / 9 concepts in the `local-minions` bundle — every concept by title and description, so recognition replaces recall). Prior art: the `remember` plugin's `SessionStart` injection. Also worth templating a sharper `CLAUDE.md` bullet in `templates/` — name the concrete surfaces the bundle covers rather than an abstract "before re-deriving history". Rationale for P1 over P2: unread, every other feature here is dead weight — the bar is stated best in `local-minions`' hand-written bundle `CLAUDE.md` ("a wiki nobody reads is worse than a backlog nobody prunes"), a line that is **not** in `templates/bundle-CLAUDE.md`. That the sharpest authoring rules exist only in one downstream repo is itself part of this item: harvest them back into the template. Overlaps the sidecar item below; decide whether the hook ships standalone (available now) or as the sidecar's first job.
-
-  ***Update 2026-07-22 — a mechanism that works today, found by dogfooding.** The marketplace repo now keeps its runtime knowledge in a bundle at `.agents/wiki/` and makes it discoverable with a single `@`-import from `AGENTS.md`: `@.agents/wiki/index.md`. Briefing-file `@`-imports are loaded into every session by both Claude Code and Gemini CLI, so the root index — every concept by title, 823 bytes for 12 concepts — is in context unconditionally, with the bodies left on disk. That is the recognition-replaces-recall property this item wanted, with no hook, no sidecar, and no new code. It is also 5x cheaper than the flat `INSIGHTS.md` it replaced (4369 bytes, loaded whole every session regardless of relevance).*
-
-  *This does not close the item — it narrows it. `/llm-wiki:init` should **offer to add the `@<bundle>/index.md` line to the host repo's `AGENTS.md`/`CLAUDE.md`** as its discovery step, since that is a one-line edit with a proven mechanism, and fall back to the `SessionStart` hook only for hosts without briefing-file imports. Worth re-reading the failure this item records: the pointer that did not fire was prose ("read `.agents/wiki/index.md` before re-deriving history"), not an `@`-import — a passive instruction the agent had to decide to act on, versus content the harness loads whether it decides to or not.*
+(none)
 
 ## P2 — Nice-to-Have
-
-- [ ] **[P2]** `okf_index.py` lists the reserved `CLAUDE.md` in the generated root index under a `# Other` heading, while `okf_validate.py` treats it as reserved and skips it. The two disagree about whether the per-bundle schema file is bundle content. Harmless but noisy in the one file that is `@`-imported into every session, where bytes matter. Decide which is right and make them agree — most likely: index should skip all three reserved names (`index.md`, `log.md`, `CLAUDE.md`).
 
 - [ ] **[P2]** Add a sidecar to run periodic/background bundle maintenance — schedule the passes that currently only happen when a human remembers to type them (`/llm-wiki:lint` for semantic drift, `/llm-wiki:log` for dated entries, plus `okf_index.py` / `okf_validate.py` / `okf_stats.py`). Open questions: timer mechanism (systemd timer vs. cron vs. `SessionStart` hook), whether lint's LLM pass runs unattended or only reports, and how findings surface (write to `log.md`, open a report doc, or notify). Prior art: `local-minions`' `minion-memory-sidecar.timer`.
 - [ ] **[P2]** Add `raw/` sources layer convention to `/llm-wiki:init` — scaffold a `raw/` subdirectory alongside the bundle and document the convention in `templates/bundle-CLAUDE.md`; currently unspecced (DESIGN.md §13).

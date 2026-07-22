@@ -178,13 +178,14 @@ Python 3. Vendored modules keep their upstream behavior; new modules are built o
 | **okf_bq.py** | `list <project.dataset>` · `describe <project.dataset> <id>` · `sample <project.dataset> <id> [-n N]` → JSON. Shard-family detection (`^(.+?_)(\d{6,8})$`); billing from ADC or `--billing-project`. | `bigquery.py`, `base.py` |
 | **okf_search.py** | `<root> <query> [--k N]` → ranked hits; index-first, grep/BM25 fallback; optional qmd hand-off if present. | gist "CLI tools" (new) |
 | **okf_stats.py** | `<root>` → `{by_type, links, orphans, broken_links, citation_coverage}`. | (new) |
+| **okf_discover.py** | `<root> [--host DIR] [--check\|--sync] [--create]` → install/refresh the bundle's discovery block in the host repo's briefing files, one mode per file (`@` import for a standalone `CLAUDE.md`, inlined catalog otherwise). Owns only the region between its `<!-- llm-wiki:discovery <rel> -->` markers; `--check` exits 1 when missing or stale. | (new) |
 
 ### 6.5 Hooks
 
 Per Decision 3, exactly one hook. `hooks/hooks.json`:
 
 - **PostToolUse**, matcher `Write|Edit`, fires when the edited path is `*.md` under a bundle → runs `okf_validate.py <root> --file <changed>`. On non-zero exit, returns a **blocking** decision with the validator's error so Claude fixes the doc before the turn ends. This is the hook equivalent of the upstream `write_concept_doc` validation, enforcing §9 on every write.
-- **No** Stop/SubagentStop auto-regeneration; **no** SessionStart side effects. (A read-only SessionStart orientation hook is noted as opt-in future work, off by default.)
+- **No** Stop/SubagentStop auto-regeneration; **no** SessionStart side effects. Session-start orientation was considered as a hook and is instead handled by `okf_discover.py` writing the host briefing file (§8.1) — the briefing file is loaded by both runtimes for free, whereas Antigravity has no `SessionStart` event at all and its `PreInvocation` substitute blocks every turn.
 
 ### 6.6 Templates
 
@@ -212,7 +213,9 @@ An adapter = a **skill** (routing/judgment) + an optional **script** (determinis
 
 ### 8.1 Init
 
-`/llm-wiki:init research/llms` → scaffold bundle, write the per-bundle `CLAUDE.md`, root `index.md` (`okf_version: "0.1"`), `.gitignore`, optional `raw/`.
+`/llm-wiki:init research/llms` → scaffold bundle, write the per-bundle `CLAUDE.md`, root `index.md` (`okf_version: "0.1"`), `.gitignore`, optional `raw/`, then **install discovery** in the host repo's briefing files.
+
+Discovery is the step that decides whether any of the rest matters. A prose pointer does not fire — "I am about to re-derive something the wiki covers" is not a state an agent recognises about itself (observed failing over a full session, `local-minions`, 2026-07-21). What fires is content the harness loads unconditionally: the briefing file. The runtimes disagree on which file that is and whether `@` imports expand (Claude Code 2.1.218: `CLAUDE.md`, imports yes, `AGENTS.md` never read; `agy` 1.1.5: `AGENTS.md`/`GEMINI.md`, imports no), so `okf_discover.py` chooses per file and `/llm-wiki:index` re-syncs the inlined copies.
 
 ### 8.2 Supervised ingest (default)
 

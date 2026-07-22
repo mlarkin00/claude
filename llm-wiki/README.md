@@ -6,7 +6,8 @@ Claude Code plugin for creating and maintaining **Open Knowledge Format (OKF) v0
 
 Claude becomes the disciplined author and maintainer of a persistent, interlinked markdown wiki:
 
-- **Init** a bundle with conventions and a per-bundle `CLAUDE.md` that disciplines future authoring
+- **Init** a bundle with conventions, a per-bundle `CLAUDE.md` that disciplines future authoring, and **discovery** wired into the host repo's briefing files so the bundle is actually read
+- **Discover** — the root catalog reaches every session unconditionally: a `@bundle/index.md` import in `CLAUDE.md`, or the catalog inlined into `AGENTS.md`/`GEMINI.md` for Antigravity, which loads those but does not expand imports
 - **Ingest** from BigQuery datasets, web pages, or local files
 - **Enrich** concept docs with prose, schema summaries, query patterns, and cross-links
 - **Validate** OKF §9 conformance on every write (PostToolUse hook)
@@ -24,7 +25,7 @@ Claude becomes the disciplined author and maintainer of a persistent, interlinke
 | `/llm-wiki:ingest <source>` | Supervised ingest from any source |
 | `/llm-wiki:enrich [concept…]` | Re-enrich named (or all) concepts |
 | `/llm-wiki:validate [dir]` | Full §9 conformance check |
-| `/llm-wiki:index [dir]` | Regenerate all `index.md` files |
+| `/llm-wiki:index [dir]` | Regenerate all `index.md` files and refresh discovery blocks |
 | `/llm-wiki:visualize [dir]` | Generate `viz.html` graph |
 | `/llm-wiki:lint [dir]` | Semantic health check |
 | `/llm-wiki:query <q>` | Cited answer from the bundle |
@@ -66,7 +67,7 @@ pip install google-genai                    # optional: LLM index descriptions
 
 ## Architecture
 
-- **Scripts** (deterministic): `okf_doc.py`, `okf_validate.py`, `okf_index.py`, `okf_visualize.py`, `okf_fetch.py`, `okf_bq.py`, `okf_search.py`, `okf_stats.py`
+- **Scripts** (deterministic): `okf_doc.py`, `okf_validate.py`, `okf_index.py`, `okf_discover.py`, `okf_visualize.py`, `okf_fetch.py`, `okf_bq.py`, `okf_search.py`, `okf_stats.py`
 - **Skills** (judgment): `okf-spec`, `authoring-concepts`, `ingesting-sources`, `ingesting-web`, `ingesting-bigquery`, `maintaining-okf`, `querying-okf`
 - **Agents**: `okf-concept-enricher`, `okf-web-crawler`, `okf-linter`, `okf-source-scout`
 - **Hook**: PostToolUse validates every `.md` write for OKF §9 conformance

@@ -37,6 +37,11 @@ conversation answered "NO MEMORIES INJECTED".
 Reference implementation: `memory-bank/scripts/agy_load_context.py` (3.98s first
 turn, 0.03s after, memories present on both).
 
+For context that is **static** for the session, do not use a hook at all — put it
+in the briefing file, which both runtimes load for free. Which file, and whether
+imports expand, differs per runtime:
+[briefing-file loading](../cross-runtime/briefing-file-loading.md).
+
 # Citations
 
 [1] [mlarkin00/plugins](https://github.com/mlarkin00/plugins)

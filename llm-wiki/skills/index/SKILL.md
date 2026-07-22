@@ -26,6 +26,14 @@ python3 <plugin_root>/scripts/okf_index.py <bundle_root> --llm
 
 The script prints the list of written `index.md` paths to stdout and a summary to stderr.
 
+Then refresh bundle discovery, because a host briefing file may hold an **inlined copy** of the root index (see `/llm-wiki:init`):
+
+```bash
+python3 <plugin_root>/scripts/okf_discover.py <bundle_root> --sync
+```
+
+`--sync` refreshes blocks that already exist and never creates one, so it is safe to run unconditionally. If it reports `skipped (no block …)` for every file, discovery was never installed — offer to run `okf_discover.py <bundle_root>` (no flag) to install it.
+
 ## What gets written
 
 Each directory with `.md` files (excluding `index.md` itself) gets an `index.md` with this format:
@@ -51,7 +59,7 @@ Each directory with `.md` files (excluding `index.md` itself) gets an `index.md`
 - Before `/llm-wiki:visualize` (the visualizer reads concept frontmatter, not indexes, but fresh indexes help navigation).
 - Before committing or sharing a bundle.
 
-**Do not run during init** — the root `index.md` is seeded from the template; `okf_index.py` would overwrite its `okf_version` frontmatter. Run it only after the first concept docs are added.
+**Do not run during init** — there are no concept docs yet, so it has nothing to catalog. (It is safe against the seeded root: regeneration preserves the `okf_version` frontmatter that marks the bundle root.) Run it once the first concept docs are added.
 
 ## Claude-upgraded descriptions (optional)
 

@@ -5,3 +5,7 @@
 # Pitfall
 
 * [Hook payload keys differ in case between runtimes](payload-key-casing.md) - Claude Code sends snake_case, Antigravity sends protojson camelCase; a shared hook script must read both or it silently no-ops on one runtime.
+
+# Runtime Behaviour
+
+* [Each runtime reads a different briefing file, and only one expands imports](briefing-file-loading.md) - Claude Code loads CLAUDE.md and expands `@` imports but never reads AGENTS.md; agy loads AGENTS.md/GEMINI.md but ignores imports — so no single line reaches both.

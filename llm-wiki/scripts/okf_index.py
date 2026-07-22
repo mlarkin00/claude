@@ -25,6 +25,7 @@ from typing import Callable
 sys.path.insert(0, str(Path(__file__).parent))
 
 from okf_lib.document import OKFDocument
+from okf_lib.paths import RESERVED_FILENAMES
 
 log = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ def regenerate_indexes(
         entries: list[tuple[str, str, str, str]] = []
 
         for child in sorted(directory.iterdir()):
-            if child.name == _INDEX_FILE:
+            if child.name in RESERVED_FILENAMES:
                 continue
             if child.is_file() and child.suffix == ".md":
                 doc = _load_doc(child)
