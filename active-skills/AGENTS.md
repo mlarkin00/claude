@@ -23,7 +23,7 @@ This repo contains **skills and skill-authoring tooling only**. Usage tracking l
 # Regenerate the README inventory (run after adding/removing/retitling a skill)
 bash scripts/gen-readme.sh
 
-# Update-check sidecar tests (unittest — pytest is not a dependency)
+# Update-check tests (unittest — pytest is not a dependency)
 python3 -m unittest discover -s tests -q
 
 # Validate as an Antigravity plugin (also a good check that skills/ is clean)
@@ -42,7 +42,6 @@ python3 -c "import json;[json.load(open(f)) and print('OK',f) for f in ['.claude
   | Changed path | Bumps |
   |---|---|
   | `skills/**` | both (`.claude-plugin/plugin.json` + `plugin.json`) |
-  | `sidecars/**` | Antigravity only (`plugin.json`) |
   | docs, `scripts/`, `tests/`, `.github/` | nothing |
 
   This exists because plugin caches are version-keyed: an unbumped change is never delivered, so relying on memory to bump was a silent-failure mode. Extend the mapping when a runtime-specific directory is added.

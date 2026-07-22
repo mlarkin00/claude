@@ -7,7 +7,7 @@ name: Sync active-skills
 # present.
 #
 # SCOPE: only active-skills/skills/ is written. active-skills/ IS A REAL PLUGIN
-# and everything beside skills/ — both manifests, scripts/, sidecars/, tests/,
+# and everything beside skills/ — both manifests, scripts/, hooks.json, tests/,
 # README.md, AGENTS.md — is hand-maintained here and MUST NOT be touched by this
 # workflow. The rsync destination is skills/, so --delete cannot reach them.
 #

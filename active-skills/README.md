@@ -36,7 +36,7 @@ After adding, removing, or retitling a skill, regenerate the inventory below:
 bash scripts/gen-readme.sh
 ```
 
-To publish: **just push to `main`.** A release workflow patch-bumps the affected manifest(s) and tags the release — a change under `skills/` bumps both runtimes, one under `sidecars/` bumps only Antigravity, and docs or tooling bump nothing. Don't hand-edit a `version`; the bot owns it.
+To publish: **just push to `main`.** A release workflow patch-bumps the affected manifest(s) and tags the release — a change under `skills/` bumps both runtimes, and docs or tooling bump nothing. Don't hand-edit a `version`; the bot owns it.
 
 That bump is then what ships: a sync workflow in `mlarkin00/plugins` mirrors the change into the marketplace and restamps its `marketplace.json`. The version is what matters, because plugin caches are version-keyed — which is exactly why bumping is automated rather than left to memory.
 
@@ -46,8 +46,10 @@ That bump is then what ships: a sync workflow in `mlarkin00/plugins` mirrors the
 |---|---|
 | `skills/` | The skills. Only skill directories belong here. |
 | `scripts/gen-readme.sh` | Regenerates the inventory below. |
-| `sidecars/check-updates/` | Antigravity: periodic update check. |
-| `tests/` | Tests for the update-check sidecar. |
+| `scripts/check_updates.py` | Compares the installed version against the marketplace repo. |
+| `scripts/agy_check_updates.py` | Antigravity `Stop` hook: runs the check at most once every 6 hours. |
+| `hooks.json` | Antigravity hook declarations. |
+| `tests/` | Tests for the update check and its hook gate. |
 | `.claude-plugin/plugin.json`, `plugin.json` | The two runtime manifests. |
 
 ## Skills

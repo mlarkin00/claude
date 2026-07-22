@@ -12,6 +12,13 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/sync-usage.py --min-interval 1800 >/dev/null 2>&1 || true; printf '{}\\n'",
+        "timeout": 20
+      }
     ]
   }
 }

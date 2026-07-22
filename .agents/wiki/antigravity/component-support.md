@@ -2,7 +2,7 @@
 type: Runtime Behaviour
 title: Which plugin components actually work on Antigravity
 description: Skills and hooks work; agents install but cannot be invoked; sidecars
-  are never registered from a plugin directory.
+  never run at all because the CLI starts no sidecar manager.
 tags:
 - antigravity
 - install
@@ -17,7 +17,7 @@ Established by live `agy -p` sessions, not by installer output.
 | hooks | yes | yes — root `hooks.json` only ([contract](hooks-contract.md)) |
 | `commands/` | yes (surfaced as skills) | only on the claude-format [install path](install-paths.md) |
 | `agents/` | yes | **no** — installed, counted, unreachable |
-| `sidecars/` | n/a | **no** — [wrong location](sidecar-location.md) |
+| `sidecars/` | n/a | **no** — [manager never starts](sidecar-location.md) |
 
 ## Agents are unreachable
 
@@ -28,6 +28,15 @@ and `self`. They are not converted to skills either.
 
 **Consequence:** anything whose remediation is "run the X agent" cannot happen on
 Antigravity. Design so that whatever a plugin must *do* there is a skill or a hook.
+
+## Sidecars never run
+
+The CLI starts no sidecar manager, so a sidecar is inert wherever it is placed —
+inside a plugin or in the documented `<config>/sidecars/` location alike. There
+is no background execution available to a plugin on this runtime at all.
+
+**Consequence:** periodic work has to hang off `Stop` or `PreInvocation` and be
+gated, which means it happens only while someone is using the tool.
 
 # Citations
 

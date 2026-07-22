@@ -1,9 +1,10 @@
 __pycache__/
 *.pyc
 
-# Transient siblings of a usage-counts file, if a counts destination is ever
-# configured to point here. The counts themselves are private and must never
-# be committed to this public repo.
-.skill-usage.lock
+# The counts destination is the authoring repo (mlarkin00/active-skills), which
+# tracks one file per machine under skill-usage/. This is the vendored mirror,
+# not that repo, so counts appearing here mean a destination was misconfigured
+# to point at the marketplace checkout — keep them ignored.
 .skill-usage-*.tmp
 skill-usage.json
+skill-usage/

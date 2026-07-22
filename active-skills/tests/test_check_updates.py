@@ -1,11 +1,14 @@
+import json
 import os
 import sys
+import tempfile
+import time
 import unittest
 import pathlib
 from unittest.mock import patch, mock_open, MagicMock
 
-# Ensure sidecar path can be imported
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../sidecars/check-updates')))
+SCRIPTS = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
+sys.path.insert(0, SCRIPTS)
 
 class TestCheckUpdates(unittest.TestCase):
 
@@ -18,11 +21,43 @@ class TestCheckUpdates(unittest.TestCase):
         the fetch 404'd on every run and the check reported "preserving last
         known state" indefinitely.
         """
-        src = (pathlib.Path(__file__).resolve().parents[1]
-               / "sidecars" / "check-updates" / "check_updates.py").read_text(encoding="utf-8")
+        src = (pathlib.Path(SCRIPTS) / "check_updates.py").read_text(encoding="utf-8")
         self.assertIn("raw.githubusercontent.com/mlarkin00/plugins", src)
         self.assertIn("/active-skills/plugin.json", src)
         self.assertNotIn("mlarkin00/active-skills/main/plugin.json", src)
+
+    def test_manifest_path_resolves_to_the_plugin_root(self):
+        """The checker moved from sidecars/check-updates/ up to scripts/.
+
+        Its manifest read is relative to its own directory, so the move changes
+        the correct number of levels from two to one. Getting this wrong is
+        silent: the read fails, the version falls back to the cached value, and
+        the check reports success against a stale local version forever.
+        """
+        import check_updates
+        manifest = os.path.abspath(os.path.join(SCRIPTS, '..', 'plugin.json'))
+        self.assertTrue(os.path.isfile(manifest), manifest)
+        with open(manifest) as f:
+            self.assertEqual(json.load(f)['name'], 'active-skills')
+        src = pathlib.Path(check_updates.__file__).read_text(encoding="utf-8")
+        self.assertIn("'../plugin.json'", src)
+        self.assertNotIn("'../../plugin.json'", src)
+
+    def test_status_dir_avoids_the_plugin_directory(self):
+        """status.json must not land inside the installed plugin.
+
+        The sidecar fell back to a `data/` folder beside itself. A hook-driven
+        run has no ANTIGRAVITY_EXECUTABLE_DATA_DIR, and anything written into
+        the plugin is wiped by the next `agy plugin install`, taking the cached
+        remote version with it.
+        """
+        from check_updates import status_dir
+        with patch.dict(os.environ, {'XDG_CACHE_HOME': '/tmp/xdg'}, clear=True):
+            self.assertEqual(status_dir(), '/tmp/xdg/active-skills')
+        with patch.dict(os.environ, {'ACTIVE_SKILLS_STATE_DIR': '/tmp/pinned'}, clear=True):
+            self.assertEqual(status_dir(), '/tmp/pinned')
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertNotIn(SCRIPTS, status_dir())
 
     def test_parse_version(self):
         """Test semantic version parsing edge cases and robust formatting."""

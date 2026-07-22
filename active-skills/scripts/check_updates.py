@@ -1,9 +1,36 @@
+"""Compare the installed active-skills version against the marketplace repo.
+
+Ran as a sidecar until 2026-07-22, on a 6-hourly schedule. It never executed:
+the agy CLI starts no sidecar manager, so a plugin's `sidecars/` directory is
+inert on both runtimes (evidence in `.agents/wiki/antigravity/`). It is now
+driven by `agy_check_updates.py` from a `Stop` hook, which applies the same
+6-hourly cadence and runs this detached so it never delays a turn.
+
+Writes status.json and exits; nothing consumes that file yet.
+"""
+
 import os
 import sys
 import json
 import re
 import urllib.request
 from datetime import datetime, timezone
+
+
+def status_dir():
+    """Directory holding status.json.
+
+    The sidecar read ANTIGRAVITY_EXECUTABLE_DATA_DIR and fell back to a `data/`
+    folder beside itself. A hook gets no such variable, and writing inside the
+    installed plugin would be wiped by the next `agy plugin install`, so this
+    defaults to the XDG cache. The override exists for tests and for pinning the
+    location on a machine with an unusual cache root.
+    """
+    override = os.environ.get('ACTIVE_SKILLS_STATE_DIR')
+    if override:
+        return override
+    cache_root = os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache')
+    return os.path.join(cache_root, 'active-skills')
 
 def parse_version(v_str):
     """
@@ -30,12 +57,11 @@ def parse_version(v_str):
 
 def check_for_updates():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    local_path = os.path.abspath(os.path.join(current_dir, '../../plugin.json'))
-    
+    # scripts/ sits one level under the plugin root; the sidecar sat two.
+    local_path = os.path.abspath(os.path.join(current_dir, '../plugin.json'))
+
     # Establish data directory and state tracking paths
-    data_dir = os.environ.get('ANTIGRAVITY_EXECUTABLE_DATA_DIR')
-    if not data_dir:
-        data_dir = os.path.join(current_dir, 'data')
+    data_dir = status_dir()
     status_path = os.path.join(data_dir, 'status.json')
 
     # Try loading existing status file to preserve previous state on failure

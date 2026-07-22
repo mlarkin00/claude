@@ -6,7 +6,7 @@ Single install point for one plugin set across **two runtimes** — Claude Code 
 
 ## Project Context
 
-Each top-level directory is one plugin serving both runtimes from one copy: `.claude-plugin/plugin.json` (Claude) and `plugin.json` (Antigravity) carrying the same version, plus some of `skills/`, `agents/`, `commands/`, `hooks/hooks.json` (Claude), `hooks.json` (Antigravity), `scripts/`, `sidecars/`. `.claude-plugin/marketplace.json` lists them. No build step; `memory-bank/tests` and `active-skills/tests` run under stdlib `unittest` (no pytest).
+Each top-level directory is one plugin serving both runtimes from one copy: `.claude-plugin/plugin.json` (Claude) and `plugin.json` (Antigravity) carrying the same version, plus some of `skills/`, `agents/`, `commands/`, `hooks/hooks.json` (Claude), `hooks.json` (Antigravity), `scripts/`. `.claude-plugin/marketplace.json` lists them. No build step; `active-skills`, `llm-wiki`, `memory-bank` and `skill-usage` carry `tests/`, run under stdlib `unittest` (no pytest).
 
 | Plugin | Versioned by |
 |---|---|
@@ -51,8 +51,8 @@ claude plugin marketplace update mlarkin00-plugins && claude plugin update <plug
 # `agy plugin validate <path>` hard-fails on any plugin lacking a root plugin.json.
 HOME=$(mktemp -d) agy plugin install "$PWD"
 
-# Tests (stdlib unittest — pytest is not installed)
-(cd memory-bank && python3 -m unittest discover -s tests)
+# Tests (stdlib unittest — pytest is not installed). Runs every suite.
+for p in active-skills llm-wiki memory-bank skill-usage; do (cd $p && python3 -m unittest discover -s tests -q); done
 ```
 
 ## Style & Conventions
@@ -60,25 +60,26 @@ HOME=$(mktemp -d) agy plugin install "$PWD"
 - A plugin's `version` MUST be identical in **all three** places: `.claude-plugin/plugin.json` (Claude), `plugin.json` (Antigravity), and its `marketplace.json` entry. One directory serves both runtimes, so one version describes it. Both workflows write all three; hand edits MUST too. The Antigravity manifest is optional — a plugin without one is fine, and `release.yml` logs a `::notice::` and bumps the Claude manifest alone.
 - Adding or removing a plugin means three edits: the directory, the `marketplace.json` entry, and the `PLUGINS` list in `release.yml`. Missing the third leaves a stale name in the loop that drives releases.
 - Never bump a version by hand for a plugin in a workflow's `PLUGINS` list — a manual bump races the bot. `active-skills` is the exception in reverse: `sync-active-skills.yml` patch-bumps it (both manifests + `marketplace.json`) on every mirrored skill change, and it is not in `release.yml`.
-- **Hand edits to `active-skills/` outside `skills/` need a hand bump.** The sync only bumps when its own run dirties something, so a change you commit to `sidecars/`, `scripts/`, `tests/`, or a manifest is invisible to it and nothing else versions the plugin. Unbumped means never delivered, because caches are version-keyed. Bump both manifests and `marketplace.json` in the same commit.
+- **Hand edits to `active-skills/` outside `skills/` need a hand bump.** The sync only bumps when its own run dirties something, so a change you commit to `scripts/`, `hooks.json`, `tests/`, or a manifest is invisible to it and nothing else versions the plugin. Unbumped means never delivered, because caches are version-keyed. Bump both manifests and `marketplace.json` in the same commit.
 - Changes that cannot affect an install do not trigger a release: `release.yml` filters `<plugin>/README.md`, `<plugin>/.github/`, and `<plugin>/.agents/`. A release burns a version and invalidates version-keyed caches, so a backlog edit must not cut one. Anything else under a plugin directory does.
 - **A hook that must run under Antigravity MUST be declared in a hand-written root `hooks.json`.** Shape: `{"<hook-name>": {"<Event>": [...]}}`. `PreToolUse`/`PostToolUse` take a `{matcher, hooks}` wrapper; `PreInvocation`/`PostInvocation`/`Stop` take a flat handler list. Those five are the only events — there is no `SessionStart` and no `SessionEnd`. Commands MUST be relative (`./scripts/x.sh`); cwd is the directory holding `hooks.json`. Copy the working shape from `skill-usage/hooks.json`.
 - **`$CLAUDE_PLUGIN_ROOT` is populated for Claude hooks only.** It is empty in any command the model runs, and undefined everywhere in Antigravity. Skills MUST locate a script by trying, in order, `~/.claude/scripts/<plugin>/…`, `~/.gemini/config/plugins/<plugin>/scripts/…`, then `~/.claude/plugins/cache/*/<plugin>/*/scripts/…` — as two plain commands (a lookup, then the call). Never `ls a b c | head -1` (`ls` sorts, so it picks a stale cache copy) and never one `$(…)` line (auto-denied in headless agy). See `@memory-bank/AGENTS.md`.
 - Session-once work has no Antigravity equivalent: map it to `PreInvocation` **and gate it**, since that fires before every model call and blocks the loop. Gate on `conversationId`; if the hook injects context, cache and replay the payload rather than skipping, because `ephemeralMessage` is transient.
+- **Periodic work must be a gated `Stop` hook — never a sidecar.** The agy CLI starts no sidecar manager, so `sidecars/` is inert wherever it sits, and nothing outside `plugins/<name>/` is created, refreshed, or removed by `agy plugin install`/`uninstall`. `Stop` fires every turn, so gate on a timestamp file and spawn anything slow detached.
 
 ## Architecture & Constraints
 
-**Not every component type works on both runtimes.** Skills and hooks work on both; `agents/` install on Antigravity and are unreachable there; `sidecars/` are never loaded from a plugin at all; `commands/` convert only on the claude-format path. Full matrix and the evidence: `@.agents/wiki/antigravity/component-support.md`. Design around it — anything a plugin must *do* on Antigravity has to be a skill or a hook.
+**Not every component type works on both runtimes.** Skills and hooks work on both; `agents/` install on Antigravity and are unreachable there; sidecars never run there at all, because the CLI starts no sidecar manager; `commands/` convert only on the claude-format path. Full matrix and the evidence: `@.agents/wiki/antigravity/component-support.md`. Design around it — anything a plugin must *do* on Antigravity has to be a skill or a hook.
 
 **Two independent release paths.** `release.yml` fires on every push to `main`, patch-bumps any plugin in its `PLUGINS` list with release-relevant changes, commits as `github-actions[bot]`, tags `<plugin>-v<version>`, and cuts a GitHub release. It guards against its own push with `if: github.actor != 'github-actions[bot]'`. `sync-active-skills.yml` is separate and owns `active-skills`.
 
 `active-skills` MUST stay out of `release.yml`. The sync job commits to `main` on its own; a second versioner would let a rebase race onto a competing bump and produce conflicting or duplicate `active-skills-v<N>` tags.
 
-**`active-skills/` is a real plugin; only its `skills/` is a mirror.** The manifests, `scripts/`, `sidecars/`, `tests/`, `README.md`, and `AGENTS.md` are hand-maintained **here** and are yours to edit. `active-skills/skills/` is the rsync target and is overwritten on every sync — change skills in `mlarkin00/active-skills`, never here.
+**`active-skills/` is a real plugin; only its `skills/` is a mirror.** The manifests, `scripts/`, `hooks.json`, `tests/`, `README.md`, and `AGENTS.md` are hand-maintained **here** and are yours to edit. `active-skills/skills/` is the rsync target and is overwritten on every sync — change skills in `mlarkin00/active-skills`, never here.
 
 `sync-active-skills.yml` runs on `repository_dispatch`, a daily 06:17 UTC poll, or manual dispatch. It selects by contract — **a skill is a top-level source directory containing a `SKILL.md`** — so the authoring repo can hold `README.md`/`docs/` without shipping phantom skills (Antigravity installs *every* entry under `skills/` as one). Skips are logged as a `::notice::`.
 
-Two guards are load-bearing, not stylistic. The rsync destination is `active-skills/skills/`, so `--delete` cannot reach the plugin's own files one level up; an earlier whole-directory mirror ran against a restructured source, flattened the skills to the plugin root, deleted the manifests and `sidecars/`, and **reported success** (`716fb23`, recovered in `0ca72e7`). And the run aborts on zero skills, which would otherwise empty the plugin and commit it as a success.
+Two guards are load-bearing, not stylistic. The rsync destination is `active-skills/skills/`, so `--delete` cannot reach the plugin's own files one level up; an earlier whole-directory mirror ran against a restructured source, flattened the skills to the plugin root, deleted the manifests and the plugin's own scripts, and **reported success** (`716fb23`, recovered in `0ca72e7`). And the run aborts on zero skills, which would otherwise empty the plugin and commit it as a success.
 
 The vendoring exists because `agy plugin install <clone>` installs every plugin *physically present* — so `active-skills` must be here, not merely referenced. There is no ad-hoc agy install from a repo URL, and `agy plugin import claude` does not work.
 
@@ -101,7 +102,7 @@ Open the concept before re-deriving anything it covers.
 
 ### Subdirectories
 
-* [antigravity](.agents/wiki/antigravity/index.md) - Contains 8 entries: Which plugin components actually work on Antigravity, Headless permission matching is first-word based, Antigravity hooks contract, Two install paths, selected by the root plugin.json, agy plugin install component counts are not evidence, $CLAUDE_PLUGIN_ROOT does not exist in Antigravity, PreInvocation is not SessionStart, Sidecars load from the config directory, never from a plugin.
+* [antigravity](.agents/wiki/antigravity/index.md) - Contains 8 entries: Which plugin components actually work on Antigravity, Headless permission matching is first-word based, Antigravity hooks contract, Two install paths, selected by the root plugin.json, agy plugin install component counts are not evidence, $CLAUDE_PLUGIN_ROOT does not exist in Antigravity, PreInvocation is not SessionStart, The agy CLI never starts the sidecar manager.
 * [claude-code](.agents/wiki/claude-code/index.md) - claude plugin update needs the name@marketplace form, and `details` resolves the newest cached version rather than the loaded one — so a fix can look live while the session still runs old code.
 * [cross-runtime](.agents/wiki/cross-runtime/index.md) - Contains 3 entries: Each runtime reads a different briefing file, and only one expands imports, Hook payload keys differ in case between runtimes, How a skill locates its plugin's scripts.
 * [testing](.agents/wiki/testing/index.md) - Contains 2 entries: ls does not honour argument order, Popping a patched module makes tests hit the network.

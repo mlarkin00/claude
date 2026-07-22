@@ -1,0 +1,11 @@
+{
+  "active-skills-update-check": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/agy_check_updates.py",
+        "timeout": 10
+      }
+    ]
+  }
+}
