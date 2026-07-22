@@ -1,6 +1,6 @@
 ---
 name: skill-portfolio-review
-description: This skill scans every skill in a directory, clusters them by semantic similarity, applies the umbrella-class test, and returns an implementation-ready report: the new/consolidated skills to build, the skills to remove, portfolio-level learnings, and exact ordered steps another agent can execute to make the changes. Make sure to use this whenever the user wants their whole skill set audited for redundancy or umbrella-ification, even if they don't say "consolidate". For reviewing or improving a SINGLE skill against best practices use skill-improvement; for authoring one new skill use skill-creator-enhanced.
+description: "This skill scans every skill in a directory, clusters them by semantic similarity, applies the umbrella-class test, and returns an implementation-ready report: the new/consolidated skills to build, the skills to remove, portfolio-level learnings, and exact ordered steps another agent can execute to make the changes. Make sure to use this whenever the user wants their whole skill set audited for redundancy or umbrella-ification, even if they don't say \"consolidate\". For reviewing or improving a SINGLE skill against best practices use skill-improvement; for authoring one new skill use skill-creator-enhanced."
 ---
 
 # Skill Portfolio Review
