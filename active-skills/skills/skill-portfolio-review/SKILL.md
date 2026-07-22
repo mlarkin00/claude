@@ -74,7 +74,7 @@ specifies:
 
 - **Overview** — counts and the headline (how many genuine consolidations vs. correct-as-is).
 - **Learnings** — cross-cutting observations (naming, scoping, coverage gaps, cross-reference hubs, triggering-overlap risk) with evidence from the scan.
-- **Changes to implement** — one block per consolidation/removal, written as concrete ordered operations (patch which SKILL.md section, `git mv` which package, migrate which exact references) so another agent runs them verbatim.
+- **Changes to implement** — one block per consolidation/removal, written as concrete ordered operations (patch which SKILL.md section, `git mv` which package, migrate which exact references) so another agent runs it blindly.
 - **New / umbrella skill specs** — for each umbrella to create or rewrite: ready-to-paste name, description, category, body outline, and which siblings fill which sections/support files.
 - **Skills to remove** — a table with disposition (consolidated-into / pruned), reason, and archive command.
 - **Skills kept as-is** — one line each with the reason.
@@ -110,16 +110,16 @@ you.
 | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | "The scanner clustered them, so they should merge."                   | Clusters are term-overlap candidates. Similar vocabulary ≠ same umbrella class. Apply the test by judgment. |
 | "Fewer skills is better; merge everything that's close."              | Over-merging creates monolithic skills that are hard to trigger. Balanced-and-distinct beats one grab-bag. |
-| "This skill is narrow, so archive it."                                | Narrow ≠ deletable. If it serves the same class as an umbrella, demote it into that umbrella's support files — don't lose the content. |
+| "This skill is narrow, so archive it."                                | Narrow ≠ deletable. If it serves the same class as an umbrella, demote it into that umbrella's support files — don't lose it. |
 | "I'll flatten its SKILL.md into the umbrella's references/."          | If it has support files or relative links, that orphans them. Move the whole package and rewrite paths, or keep it standalone. |
 | "I archived the skill; done."                                        | Not until references migrate. Update sibling pointers and evals, or you leave dangling `skills/<old>` paths. |
 | "I merged three clusters, that's enough for one pass."               | Earlier merges reshape the landscape. Re-scan and look for the next umbrella before declaring done. |
-| "The report says 'migrate references as needed' — good enough."      | A vague step is not executable. Name the exact files, `git mv` commands, and reference locations so another agent runs it blind. |
-| "I'll just start archiving the consolidations I found."             | The report is the deliverable; execution is a separate opt-in step. Deliver the report first, then execute on approval on a branch (or hand it off). |
+| "The report says 'migrate references as needed' — good enough."      | A vague step is not executable. Name the exact files, `git mv` commands, and reference locations so another agent runs it blindly. |
+| "I'll just start archiving the consolidations I found."             | The report is the deliverable; execution is a separate opt-in step. Deliver the report first, then execute on approval on a branch. |
 | "These two are distinct but adjacent, so keep both — no more thought."| Distinct *class* is a keep; distinct-but-same-class-as-an-umbrella is a demote. Name the class before deciding. |
 
 ## Reference files
 
 - **`scripts/portfolio_scan.py`** — inventory + TF-IDF candidate clustering + cross-reference map + narrow-name flags. `--help` for usage; JSON to stdout, summary to stderr.
-- **`references/consolidation-playbook.md`** — the umbrella-class test, over-consolidation guardrail, the three mechanisms, package-integrity rules, and safe archiving + reference migration in a git repo.
-- **`references/report-format.md`** — the implementation-ready report structure (learnings, per-change ordered steps, umbrella specs, removals table), the self-check, and the required `consolidations`/`prunings` structured summary.
+- **`references/consolidation-playbook.md`** — the umbrella-class test, over-consolidation guardrail, the three mechanisms, package-integrity rules, and safe archiving + reference migration in a git workflow.
+- **`references/report-format.md`** — the implementation-ready report structure (learnings, per-change ordered steps, umbrella specs, removals table), the self-check, and the required `consolidations:` / `prunings:` YAML block.
