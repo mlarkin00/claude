@@ -36,7 +36,7 @@ Port of the `gcp-memory-bank` Gemini CLI plugin (`~/agent-skills/plugins/memory-
 ### 1. Add the marketplace
 
 ```bash
-claude plugin marketplace add mlarkin00/claude
+claude plugin marketplace add mlarkin00/plugins
 ```
 
 ### 2. Install

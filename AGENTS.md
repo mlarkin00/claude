@@ -1,8 +1,8 @@
-# mlarkin00-claude Marketplace
+# mlarkin00-plugins Marketplace
 
 ## Project Goal
 
-Claude Code plugin marketplace. Hosts the plugins published under the `mlarkin00-claude` marketplace name and owns their versioning, tagging, and GitHub releases.
+Claude Code plugin marketplace. Hosts the plugins published under the `mlarkin00-plugins` marketplace name and owns their versioning, tagging, and GitHub releases.
 
 ## Project Context
 
@@ -54,7 +54,7 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 
 **The whole of `active-skills/` is a mirror, not source.** `sync-active-skills.yml` mirrors the entire `mlarkin00/active-skills` repo into it — adds, updates, **and deletes** to match — on `repository_dispatch`, a daily 06:17 UTC poll, or manual run. There is no hand-maintained content here: usage tracking is its own `skill-usage` plugin, so nothing in `active-skills/` is authored in this repo. Every edit here is reverted on the next sync. Change skills in `mlarkin00/active-skills`.
 
-The version is owned by the source repo's `plugin.json`; the sync copies it into `marketplace.json` and warns if content changed without a bump. This mirror exists so this repo is the single install point for both runtimes: Claude via the marketplace entry, Antigravity via `agy plugin install https://github.com/mlarkin00/claude`, which bulk-installs every plugin physically present — hence `active-skills` must be present, not merely referenced.
+The version is owned by the source repo's `plugin.json`; the sync copies it into `marketplace.json` and warns if content changed without a bump. This mirror exists so this repo is the single install point for both runtimes: Claude via the marketplace entry, Antigravity via `agy plugin install https://github.com/mlarkin00/plugins`, which bulk-installs every plugin physically present — hence `active-skills` must be present, not merely referenced.
 
 **Expect the remote to move under you.** A push to `mlarkin00/active-skills` dispatches here, and the sync bot commits to `main` on its own. A local push racing it gets rejected; rebase, never force.
 

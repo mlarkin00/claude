@@ -4,7 +4,7 @@ GCP-backed long-term memory for Claude Code. At session start, fetch global and 
 
 ## Project Context
 
-Claude Code plugin in the `mlarkin00/claude` monorepo (remote: `https://github.com/mlarkin00/claude`). Equivalent of the Gemini CLI `gcp-memory-bank` plugin (`~/agent-skills/plugins/memory-bank`).
+Claude Code plugin in the `mlarkin00/plugins` monorepo (remote: `https://github.com/mlarkin00/plugins`). Equivalent of the Gemini CLI `gcp-memory-bank` plugin (`~/agent-skills/plugins/memory-bank`).
 
 Tech stack: Python 3 (stdlib only) · GCP Vertex AI Reasoning Engine Memory Bank API · ADC via `gcloud` · bash hook scripts.
 Plugin root: `~/claude/memory-bank/`

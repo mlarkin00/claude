@@ -4,7 +4,7 @@ GCP-backed long-term memory for Claude Code. Fetches global and project-scoped f
 
 ## Project Context
 
-Claude Code plugin in `mlarkin00/claude` monorepo. Port of `~/agent-skills/plugins/memory-bank` (Gemini CLI).
+Claude Code plugin in `mlarkin00/plugins` monorepo. Port of `~/agent-skills/plugins/memory-bank` (Gemini CLI).
 Python 3 stdlib only · GCP Vertex AI Memory Bank API · ADC auth.
 
 Config lives in `.claude-plugin/plugin.json` (`config.project/location/reasoning_engine_id`); env-var fallback: `GCP_PROJECT`, `GCP_LOCATION`, `GCP_REASONING_ENGINE`.

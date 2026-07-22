@@ -9,14 +9,14 @@ Works in both Claude Code and Antigravity, and ships **no skills of its own** â€
 **Claude Code:**
 
 ```
-/plugin marketplace add mlarkin00/claude
-/plugin install skill-usage@mlarkin00-claude
+/plugin marketplace add mlarkin00/plugins
+/plugin install skill-usage@mlarkin00-plugins
 ```
 
 **Antigravity:**
 
 ```
-agy plugin install https://github.com/mlarkin00/claude
+agy plugin install https://github.com/mlarkin00/plugins
 ```
 
 ## Configure

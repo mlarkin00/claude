@@ -6,7 +6,7 @@
 | **Date** | 2026-06-19 |
 | **Owner** | Matt Larkin |
 | **Plugin name** | `llm-wiki` — commands `/llm-wiki:*`; OKF-format helpers keep the `okf` prefix (`okf_*.py`, `okf-spec`) |
-| **Marketplace** | `mlarkin00-claude` (sibling of `agent-memory`, `memory-bank`, …) |
+| **Marketplace** | `mlarkin00-plugins` (sibling of `agent-memory`, `memory-bank`, …) |
 | **Targets** | OKF v0.1 ([spec](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)) |
 
 ---
@@ -41,7 +41,7 @@ Three inputs shaped this design:
 - Make Claude the wiki maintainer (Karpathy's three operations) for **general** knowledge: documents, web pages, notes — not just data catalogs.
 - Guarantee conformance, stable index files, an enforced crawl budget, and byte-stable doc serialization via **deterministic scripts**, not model output.
 - Keep structured sources (BigQuery first) behind a **uniform adapter seam** so new sources are additive.
-- Be a well-formed plugin in the `mlarkin00-claude` marketplace, self-contained (vendored, no fragile external package dependency).
+- Be a well-formed plugin in the `mlarkin00-plugins` marketplace, self-contained (vendored, no fragile external package dependency).
 
 **Non-goals**
 
