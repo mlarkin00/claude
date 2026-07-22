@@ -20,14 +20,18 @@ Per-plugin briefings: `@llm-wiki/AGENTS.md`, `@memory-bank/AGENTS.md`.
 ## Operational Commands
 
 ```bash
-# Verify every manifest entry resolves on disk and versions agree (run after any plugin change)
+# Verify every manifest entry resolves on disk and ALL THREE versions agree
+# (marketplace entry, Claude manifest, Antigravity manifest) — run after any plugin change
 python3 -c "
 import json,os
 m=json.load(open('.claude-plugin/marketplace.json'))
 for p in m['plugins']:
-    s=p['source'].lstrip('./'); f=os.path.join(s,'.claude-plugin','plugin.json')
-    v=json.load(open(f))['version'] if os.path.isfile(f) else None
-    print(('OK ' if v==p['version'] else 'BAD'), p['name'], p['version'], v)
+    s=p['source'].lstrip('./')
+    cf=os.path.join(s,'.claude-plugin','plugin.json'); af=os.path.join(s,'plugin.json')
+    cv=json.load(open(cf))['version'] if os.path.isfile(cf) else None
+    av=json.load(open(af))['version'] if os.path.isfile(af) else '(no agy manifest)'
+    ok = cv==p['version'] and av in (cv,'(no agy manifest)')
+    print(('OK ' if ok else 'BAD'), p['name'], 'mkt='+p['version'], 'claude='+str(cv), 'agy='+av)
 d={x for x in os.listdir('.') if os.path.isdir(os.path.join(x,'.claude-plugin'))}
 print('unlisted on disk:', d-{p['name'] for p in m['plugins']} or 'none')"
 
@@ -40,7 +44,7 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 
 ## Style & Conventions
 
-- A plugin's `version` MUST be identical in its `plugin.json` and its `marketplace.json` entry. The workflows write both; hand edits MUST too.
+- A plugin's `version` MUST be identical in **all three** places: `.claude-plugin/plugin.json` (Claude), `plugin.json` (Antigravity), and its `marketplace.json` entry. One directory serves both runtimes, so one version describes it. Both workflows write all three; hand edits MUST too. The Antigravity manifest is optional — a plugin without one is fine, and `release.yml` logs a `::notice::` and bumps the Claude manifest alone.
 - Adding or removing a plugin means three edits: the directory, the `marketplace.json` entry, and the `PLUGINS` list in `release.yml`. Missing the third leaves a stale name in the loop that drives releases.
 - Never bump a version by hand for a plugin in a workflow's `PLUGINS` list — a manual bump races the bot.
 - `active-skills` is versioned differently: `sync-active-skills.yml` patch-bumps it on every mirrored skill change. It is not in `release.yml`. Both of its manifests (`.claude-plugin/plugin.json` for Claude, `plugin.json` for Antigravity) carry the **same** version — one plugin serves both runtimes.

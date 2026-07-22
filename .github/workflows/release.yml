@@ -49,18 +49,37 @@ jobs:
               continue
             fi
 
-            MANIFEST="$p/.claude-plugin/plugin.json"
-            VERSION=$(jq -r '.version' "$MANIFEST")
+            # A plugin serves both runtimes from one directory and carries a
+            # manifest for each: .claude-plugin/plugin.json for Claude Code and
+            # plugin.json for Antigravity. They MUST hold the same version, so
+            # both are written here. Writing only the Claude one is what let the
+            # Antigravity manifests drift several minor versions behind.
+            CLAUDE_MANIFEST="$p/.claude-plugin/plugin.json"
+            AGY_MANIFEST="$p/plugin.json"
+
+            VERSION=$(jq -r '.version' "$CLAUDE_MANIFEST")
             IFS='.' read -r major minor patch <<< "$VERSION"
             NEW="$major.$minor.$((patch + 1))"
             echo "$p: $VERSION -> $NEW"
 
-            jq --arg v "$NEW" '.version = $v' "$MANIFEST" > tmp && mv tmp "$MANIFEST"
+            # The Antigravity manifest is optional: a plugin may not ship one,
+            # and under `set -euo pipefail` a jq read of a missing file would
+            # abort the whole release step rather than skip one file.
+            MANIFESTS="$CLAUDE_MANIFEST"
+            if [ -f "$AGY_MANIFEST" ]; then
+              MANIFESTS="$MANIFESTS $AGY_MANIFEST"
+            else
+              echo "::notice::$p has no Antigravity manifest ($AGY_MANIFEST); bumping the Claude manifest only."
+            fi
+
+            for m in $MANIFESTS; do
+              jq --arg v "$NEW" '.version = $v' "$m" > tmp && mv tmp "$m"
+            done
             jq --arg n "$p" --arg v "$NEW" \
               '(.plugins[] | select(.name == $n) | .version) = $v' \
               "$MARKETPLACE" > tmp && mv tmp "$MARKETPLACE"
 
-            git add "$MANIFEST" "$MARKETPLACE"
+            git add $MANIFESTS "$MARKETPLACE"
             TAGS="$TAGS $p-v$NEW"
           done
 
