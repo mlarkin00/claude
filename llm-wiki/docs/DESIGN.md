@@ -92,8 +92,7 @@ Four decisions were settled with the owner; everything below follows from them.
 ```
 llm-wiki/                               # plugin root  ·  marketplace name == dir
 ├── .claude-plugin/plugin.json
-├── commands/   init · ingest · enrich · index · lint · query · validate · visualize · stats · log
-├── skills/
+├── skills/     (also the slash-command surface: /llm-wiki:<name>)
 │   ├── okf-spec/                  N    distilled rules + bundled SPEC.md (ground truth)
 │   ├── authoring-concepts/        *    write ONE conformant doc (general; catalog sections optional)
 │   ├── ingesting-sources/         *    the supervised ingest loop + adapter contract

@@ -6,7 +6,7 @@ OKF v0.1 knowledge bundle manager for Claude Code. Claude authors and maintains 
 
 ## Project Context
 
-Claude Code plugin (`plugin.json` + `commands/` + `skills/` + `agents/` + `hooks/`). Pure Python scripts for deterministic operations; Claude handles all judgment. No Node.js, no build step.
+Claude Code plugin (`plugin.json` + `skills/` + `agents/` + `hooks/`). Pure Python scripts for deterministic operations; Claude handles all judgment. No Node.js, no build step.
 
 **Tech stack:** Python 3, PyYAML, markdownify (optional), google-cloud-bigquery (optional), google-genai (optional for `--llm` index mode).
 
@@ -51,7 +51,7 @@ ls -la hooks/validate-on-write.sh
 | `skills/` | Judgment: ingest routing, enrichment authoring, semantic lint, query synthesis | Claude |
 | `agents/` | Autonomous loop tasks: enricher, crawler, linter, source scout | Claude agents |
 | `hooks/` | PostToolUse: validates every `.md` write for OKF §9 | Shell + Python |
-| `commands/` | Slash-command entry points (`/llm-wiki:<cmd>`) pointing to skills | Claude |
+**No `commands/` directory.** Claude Code surfaces commands as skills, so a `commands/<n>.md` beside a `skills/<n>/SKILL.md` collided on the name and the command won — the skill body, which holds the actual instructions, never loaded. Each skill carries its own `/llm-wiki:<n>` invocation; do not reintroduce wrappers.
 
 **Augmentation guard** (`okf_doc.py write --web-pass`): MUST refuse writes that shrink an existing doc's `# Schema` field count or `# Citations` count. Bypass with `--allow-shrink` only when intentional.
 
