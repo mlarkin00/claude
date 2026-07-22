@@ -43,8 +43,12 @@ jobs:
 
           TAGS=""
           for p in $PLUGINS; do
-            # Ignore doc-only and workflow-only changes for this plugin.
-            if ! echo "$CHANGED" | grep -E "^$p/" | grep -vE "^$p/(README\.md|\.github/)" | grep -q .; then
+            # Ignore changes that cannot affect what a user installs: docs,
+            # workflows, and .agents/ (the plugin's own backlog and notes —
+            # agent-facing project metadata, never consumed from an install).
+            # A release burns a version and invalidates every version-keyed
+            # cache, so editing a TODO must not cut one.
+            if ! echo "$CHANGED" | grep -E "^$p/" | grep -vE "^$p/(README\.md|\.github/|\.agents/)" | grep -q .; then
               echo "No release-relevant changes for $p, skipping."
               continue
             fi
