@@ -1,0 +1,18 @@
+{
+  "name": "llm-wiki",
+  "version": "0.1.1",
+  "description": "OKF knowledge bundle manager. Author, ingest, lint, query, and visualize Open Knowledge Format (OKF) v0.1 bundles. Implements the Karpathy LLM-wiki pattern with BigQuery and web ingest adapters.",
+  "author": {
+    "name": "Matt Larkin",
+    "email": "mlarkin00@gmail.com"
+  },
+  "homepage": "https://github.com/mlarkin00/plugins",
+  "keywords": [
+    "okf",
+    "knowledge",
+    "wiki",
+    "markdown",
+    "bigquery",
+    "catalog"
+  ]
+}

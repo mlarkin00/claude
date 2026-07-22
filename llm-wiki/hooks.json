@@ -1,0 +1,16 @@
+{
+  "llm-wiki-okf-validate": {
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ./hooks/validate-on-write.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

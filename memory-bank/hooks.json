@@ -1,0 +1,25 @@
+{
+  "memory-bank-loader": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/agy_load_context.py",
+        "timeout": 20
+      }
+    ]
+  },
+  "memory-bank-writer": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/save_context.py >/dev/null || true; printf '{}\\n'",
+        "timeout": 20
+      },
+      {
+        "type": "command",
+        "command": "python3 ./scripts/sidecar_consolidate.py >/dev/null || true; printf '{}\\n'",
+        "timeout": 30
+      }
+    ]
+  }
+}
