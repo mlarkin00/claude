@@ -1,6 +1,6 @@
 {
   "name": "active-skills",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "A curated set of agent skills for Claude Code and Antigravity.",
   "author": {
     "name": "Matt Larkin",
