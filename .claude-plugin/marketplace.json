@@ -27,7 +27,7 @@
       "name": "active-skills",
       "source": "./active-skills",
       "description": "A curated set of agent skills for Claude Code and Antigravity. Mirrored from mlarkin00/active-skills (the authoring source of truth).",
-      "version": "0.2.4"
+      "version": "0.2.5"
     },
     {
       "name": "skill-usage",
