@@ -1,34 +1,34 @@
 ---
 name: bootstrap-memory
-description: "Use when the user asks to set up or restore the agent memory system on a new machine, or when verify-memory reports structural failures requiring bootstrap. Handles full provisioning: repo clone, memory symlink, settings.json hooks, and memory migration. Examples:"
+description: |
+  Use when the user asks to set up or restore the agent memory system on a new machine, or when verify-memory reports structural failures requiring bootstrap. Handles full provisioning: repo clone, memory symlink, settings.json hooks, and memory migration. Examples:
 
-<example>
-Context: User just installed the agent-memory plugin on a new machine and verify-memory reported the repo is missing.
-user: "Run bootstrap-memory to set up the memory system."
-assistant: "I'll use the bootstrap-memory agent to provision the memory system on this machine."
-<commentary>
-verify-memory detected a Tier 2 failure and directed the user here. This is the primary trigger.
-</commentary>
-</example>
+  <example>
+  Context: User just installed the agent-memory plugin on a new machine and verify-memory reported the repo is missing.
+  user: "Run bootstrap-memory to set up the memory system."
+  assistant: "I'll use the bootstrap-memory agent to provision the memory system on this machine."
+  <commentary>
+  verify-memory detected a Tier 2 failure and directed the user here. This is the primary trigger.
+  </commentary>
+  </example>
 
-<example>
-Context: User is setting up Claude Code on a new machine and wants their memories available.
-user: "Set up agent memory on this machine."
-assistant: "I'll run the bootstrap-memory agent to clone your memory repo and wire up the hooks."
-<commentary>
-User explicitly asking to set up the memory system on a fresh machine.
-</commentary>
-</example>
+  <example>
+  Context: User is setting up Claude Code on a new machine and wants their memories available.
+  user: "Set up agent memory on this machine."
+  assistant: "I'll run the bootstrap-memory agent to clone your memory repo and wire up the hooks."
+  <commentary>
+  User explicitly asking to set up the memory system on a fresh machine.
+  </commentary>
+  </example>
 
-<example>
-Context: The memory system stopped syncing after reinstalling Claude Code.
-user: "Memory isn't syncing anymore, can you fix it?"
-assistant: "Let me run verify-memory first to diagnose, then bootstrap-memory if needed."
-<commentary>
-Restore scenario — hooks may have been lost when Claude Code was reinstalled.
-</commentary>
-</example>
-
+  <example>
+  Context: The memory system stopped syncing after reinstalling Claude Code.
+  user: "Memory isn't syncing anymore, can you fix it?"
+  assistant: "Let me run verify-memory first to diagnose, then bootstrap-memory if needed."
+  <commentary>
+  Restore scenario — hooks may have been lost when Claude Code was reinstalled.
+  </commentary>
+  </example>
 model: sonnet
 color: green
 tools:
