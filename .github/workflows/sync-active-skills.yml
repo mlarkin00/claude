@@ -1,18 +1,20 @@
 name: Sync active-skills
 
-# Mirrors the mlarkin00/active-skills repo (the skills source of truth) into
-# active-skills/ here, so this marketplace is the single install point for both
-# runtimes: Claude via the marketplace entry, Antigravity via a bulk `agy plugin
-# install` of this repo, which needs the plugin physically present.
+# Mirrors the skills from mlarkin00/active-skills (the skills source of truth)
+# into active-skills/skills/ here, so this marketplace is the single install
+# point for both runtimes: Claude via the marketplace entry, Antigravity via a
+# bulk `agy plugin install` of this repo, which needs the plugin physically
+# present.
 #
-# active-skills/ is a PURE MIRROR — it contains no hand-maintained plugin logic
-# (usage tracking lives in the separate skill-usage plugin), so the whole source
-# repo is mirrored wholesale and nothing here is authored by hand.
+# SCOPE: only active-skills/skills/ is written. active-skills/ IS A REAL PLUGIN
+# and everything beside skills/ — both manifests, scripts/, sidecars/, tests/,
+# README.md, AGENTS.md — is hand-maintained here and MUST NOT be touched by this
+# workflow. The rsync destination is skills/, so --delete cannot reach them.
 #
-# The source manifest owns the version. This workflow copies it into
-# marketplace.json; it does NOT auto-increment. Shipping a skill change therefore
-# requires bumping the source plugin.json — the workflow warns loudly when content
-# changed without a bump, since version-keyed caches would otherwise not refetch.
+# The source repo holds skills ONLY (each skill a top-level directory with a
+# SKILL.md) and has no manifest. This workflow therefore OWNS the version: it
+# patch-bumps both manifests and marketplace.json on every change. Nothing is
+# hand-bumped, so nothing can be forgotten.
 #
 # Runs on: a repository_dispatch from the source repo (instant), a daily poll
 # (fallback), and manual dispatch.
@@ -54,16 +56,51 @@ jobs:
       - name: Record source revision
         run: echo "SOURCE_SHA=$(git -C .source rev-parse HEAD)" >> "$GITHUB_ENV"
 
-      - name: Mirror the source repo into the plugin
+      - name: Mirror the source skills into the plugin
         run: |
           set -euo pipefail
-          DEST="${PLUGIN}/"
+          DEST="${PLUGIN}/skills/"
           mkdir -p "$DEST"
-          # Whole-repo mirror (add/update/delete). Exclude the source's own git
-          # metadata and CI — active-skills/ is a plugin directory, not a repo.
-          rsync -a --delete \
-            --exclude='.git/' --exclude='.github/' \
-            ".source/" "$DEST"
+
+          # A skill is a top-level directory in the source repo containing a
+          # SKILL.md. Everything else at that root — .github/, README.md,
+          # AGENTS.md, a future docs/ — is not ours and is skipped, so the
+          # authoring repo can grow non-skill content without shipping phantom
+          # skills. (Antigravity installs EVERY entry under skills/ as a skill.)
+          #
+          # rsync cannot test for a sibling file, so the rule set is generated
+          # here and merged in. `- /*` is anchored, matching only top-level
+          # entries, so a skill's own files are never tested against it.
+          FILTER="$(mktemp)"
+          skipped=""
+          count=0
+          for d in .source/*/; do
+            name="$(basename "$d")"
+            if [ -f "${d}SKILL.md" ]; then
+              printf '+ /%s/\n' "$name" >> "$FILTER"
+              count=$((count + 1))
+            else
+              skipped="${skipped} ${name}"
+            fi
+          done
+          printf -- '- /*\n' >> "$FILTER"
+
+          # An empty list would make --delete wipe every skill from the plugin
+          # and commit it as a success. Zero skills is never legitimate.
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No skills found in ${SOURCE_REPO}@${SOURCE_SHA} —" \
+              "refusing to sync, as --delete would empty ${DEST}."
+            exit 1
+          fi
+          if [ -n "$skipped" ]; then
+            echo "::notice::Skipped non-skill entries (no SKILL.md):${skipped}"
+          fi
+
+          rsync -a --delete --filter="merge $FILTER" ".source/" "$DEST"
+          echo "Synced ${count} skills."
+
+      - name: Regenerate the README inventory
+        run: bash "${PLUGIN}/scripts/gen-readme.sh"
 
       - name: Detect changes
         id: diff
@@ -83,26 +120,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          MANIFEST="${PLUGIN}/.claude-plugin/plugin.json"
+          CLAUDE_MANIFEST="${PLUGIN}/.claude-plugin/plugin.json"
+          AGY_MANIFEST="${PLUGIN}/plugin.json"
           MARKETPLACE=".claude-plugin/marketplace.json"
 
-          # The source manifest is authoritative for the version.
-          VERSION=$(jq -r '.version' "$MANIFEST")
-          MK_VERSION=$(jq -r --arg n "$PLUGIN" \
-            '.plugins[] | select(.name == $n) | .version' "$MARKETPLACE")
+          # This workflow owns the version. The source repo holds skills only and
+          # has no manifest, so there is nothing to read from it and nothing for
+          # an author to forget to bump. Both runtimes are served by this one
+          # plugin, so both manifests carry the SAME version.
+          #
+          # The bump must be here and nowhere else: release.yml excludes
+          # active-skills precisely because a second versioner could rebase onto
+          # a competing bump and produce duplicate active-skills-v<N> tags.
+          CUR=$(jq -r '.version' "$CLAUDE_MANIFEST")
+          VERSION=$(echo "$CUR" | awk -F. '{printf "%d.%d.%d", $1, $2, $3 + 1}')
+          echo "Bumping ${CUR} -> ${VERSION}"
 
-          # Warn loudly on the forgot-to-bump case: content moved but the version
-          # did not, so version-keyed caches will not refetch. Not fatal — the
-          # mirror still lands so the repo stays consistent — but surfaced.
-          if [ "$VERSION" = "$MK_VERSION" ]; then
-            echo "::warning::active-skills content changed but version is still" \
-              "$VERSION — caches will not refetch. Bump the version in" \
-              "${SOURCE_REPO} plugin.json to ship."
-          fi
-
+          for m in "$CLAUDE_MANIFEST" "$AGY_MANIFEST"; do
+            jq --arg v "$VERSION" '.version = $v' "$m" > tmp && mv tmp "$m"
+          done
           jq --arg n "$PLUGIN" --arg v "$VERSION" \
             '(.plugins[] | select(.name == $n) | .version) = $v' \
             "$MARKETPLACE" > tmp && mv tmp "$MARKETPLACE"
+
+          git add "$CLAUDE_MANIFEST" "$AGY_MANIFEST"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

@@ -1,0 +1,10 @@
+{
+  "description": "Checks for updates to active-skills plugin daily.",
+  "builtin": "schedule",
+  "args": [
+    "0 */6 * * *",
+    "python3",
+    "check_updates.py"
+  ],
+  "restart_policy": "on-failure"
+}
