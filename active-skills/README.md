@@ -17,11 +17,14 @@ Everything here is skills or skill-authoring tooling. Usage tracking lives in a 
 
 Skills are namespaced under the plugin, e.g. `active-skills:systematic-debugging`.
 
-**Antigravity** — installs straight from the repository URL:
+**Antigravity** — clone the marketplace repo once, then bulk-install from it:
 
+```bash
+git clone https://github.com/mlarkin00/plugins
+agy plugin install ./plugins
 ```
-agy plugin install https://github.com/mlarkin00/active-skills
-```
+
+Pointing `agy plugin install` at a directory holding several plugins reports `Found bulk plugins directory` and installs them all, this one included. Antigravity reads Claude-format plugins natively, so one clone covers every plugin in the marketplace.
 
 ## Authoring
 

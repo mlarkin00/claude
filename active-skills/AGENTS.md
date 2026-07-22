@@ -2,7 +2,7 @@
 
 ## Project Goal
 
-Source of truth for a curated set of agent skills, consumed by Claude Code and Antigravity. This is the **authoring** repo — clone it to edit skills. The `mlarkin00/plugins` marketplace mirrors it via CI, so users install from that single place (Claude marketplace, or `agy plugin install` of that repo) and never clone this one.
+Source of truth for a curated set of agent skills, consumed by Claude Code and Antigravity. This is the **authoring** repo — clone it to edit skills. The `mlarkin00/plugins` marketplace mirrors it via CI, so users install from that single place (Claude marketplace, or a clone of that repo bulk-installed with `agy plugin install <clone>`) and never clone this one.
 
 ## Project Context
 

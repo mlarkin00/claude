@@ -17,18 +17,18 @@
     {
       "id": 2,
       "prompt": "Consolidate git-sync and refresh-skills if they belong together, and make sure nothing else references the one you archive.",
-      "expected_output": "The agent confirms the umbrella class, picks the umbrella, checks package integrity (support files, skill_md_links), archives the absorbed sibling's whole package to .archive/, and migrates every inbound reference (EVAL.txtpb, sibling SKILL.md, evals), then emits the consolidations block.",
-      "trap": "The agent flattens one SKILL.md into the other and leaves dangling references to the archived skill in EVAL.txtpb and sibling skills.",
+      "expected_output": "The agent confirms the umbrella class, picks the umbrella, checks package integrity (support files, skill_md_links), archives the absorbed sibling's whole package to .archive/, and migrates every inbound reference (sibling SKILL.md pointers, evals), then emits the consolidations block.",
+      "trap": "The agent flattens one SKILL.md into the other and leaves dangling references to the archived skill in sibling skills.",
       "assertions": [
         { "id": "a1", "description": "Checks package integrity before moving (support files and relative links).", "type": "content" },
-        { "id": "a2", "description": "Migrates inbound references (EVAL.txtpb expected_skills, sibling pointers) to the umbrella.", "type": "content" },
+        { "id": "a2", "description": "Migrates inbound references (sibling SKILL.md pointers, eval prompts) to the umbrella.", "type": "content" },
         { "id": "a3", "description": "Emits the structured consolidations/prunings summary recording the forwarding target.", "type": "content" }
       ],
       "files": []
     },
     {
       "id": 3,
-      "prompt": "Review my SKILL.md in active-skills/gcloud and fix whatever isn't following best practices.",
+      "prompt": "Review my SKILL.md in skills/gcloud and fix whatever isn't following best practices.",
       "expected_output": "This is a near-miss. Reviewing/improving a SINGLE skill is skill-improvement's job, not a portfolio-wide consolidation review. This skill should not trigger.",
       "trap": "Over-triggers on the word 'skill' / 'review' and runs a whole-portfolio scan when the user asked about one skill.",
       "assertions": [

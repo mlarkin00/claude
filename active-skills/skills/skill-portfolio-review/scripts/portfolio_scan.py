@@ -21,7 +21,7 @@ map of where to look, then apply the umbrella-class test by judgment.
 Emits JSON to STDOUT and a short summary to STDERR. Non-interactive.
 
 Usage:
-    python portfolio_scan.py <portfolio-dir>            # e.g. active-skills/
+    python portfolio_scan.py <portfolio-dir>            # e.g. skills/
     python portfolio_scan.py <portfolio-dir> --threshold 0.20
     python portfolio_scan.py --help
 """
@@ -220,7 +220,7 @@ def cross_references(skills):
 def main():
     ap = argparse.ArgumentParser(
         description="Inventory a skill portfolio and surface candidate consolidation clusters.",
-        epilog="Example: python portfolio_scan.py active-skills --threshold 0.18")
+        epilog="Example: python portfolio_scan.py skills --threshold 0.18")
     ap.add_argument("portfolio_dir", help="Directory containing skill subdirectories.")
     ap.add_argument("--threshold", type=float, default=0.22,
                     help="Cosine-similarity edge threshold for clustering (default 0.22). "

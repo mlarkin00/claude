@@ -35,7 +35,7 @@ structure and the required structured summary.
 ### 1. Scan the portfolio
 
 ```bash
-python scripts/portfolio_scan.py <portfolio-dir>   # e.g. active-skills
+python scripts/portfolio_scan.py <portfolio-dir>   # e.g. skills
 ```
 
 It inventories every skill (name, description, category, body size, support
@@ -114,7 +114,7 @@ you.
 | "Fewer skills is better; merge everything that's close."              | Over-merging creates monolithic skills that are hard to trigger. Balanced-and-distinct beats one grab-bag. |
 | "This skill is narrow, so archive it."                                | Narrow ≠ deletable. If it serves the same class as an umbrella, demote it into that umbrella's support files — don't lose the content. |
 | "I'll flatten its SKILL.md into the umbrella's references/."          | If it has support files or relative links, that orphans them. Move the whole package and rewrite paths, or keep it standalone. |
-| "I archived the skill; done."                                        | Not until references migrate. Update EVAL.txtpb, sibling pointers, and evals, or you leave dangling `active-skills/<old>` paths. |
+| "I archived the skill; done."                                        | Not until references migrate. Update sibling pointers and evals, or you leave dangling `skills/<old>` paths. |
 | "I merged three clusters, that's enough for one pass."               | Earlier merges reshape the landscape. Re-scan and look for the next umbrella before declaring done. |
 | "The report says 'migrate references as needed' — good enough."      | A vague step is not executable. Name the exact files, `git mv` commands, and reference locations so another agent runs it blind. |
 | "I'll just start archiving the consolidations I found."             | The report is the deliverable; execution is a separate opt-in step. Deliver the report first, then execute on approval on a branch (or hand it off). |

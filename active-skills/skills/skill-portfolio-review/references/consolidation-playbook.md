@@ -135,23 +135,22 @@ the umbrella exists (or should) before moving it.
 
 ## Executing a consolidation in this repo
 
-Skills live in `active-skills/<name>/` and are discovered by that path (see
-`EVAL.txtpb`, which references skills as `active-skills/<name>`). "Archiving"
-means removing a skill from `active-skills/` so it is no longer discovered,
-reversibly.
+Skills live in `skills/<name>/` and are discovered by that path — every runtime
+installs each directory there as a skill. "Archiving" means removing a skill
+from `skills/` so it is no longer discovered, reversibly.
 
 **Snapshot / safety:** work on a branch, and commit before and after each
 cluster so every consolidation is an isolated, revertible change.
 
 **Archive with history preserved** — move the whole package out of
-`active-skills/` rather than deleting it:
+`skills/` rather than deleting it:
 
 ```bash
 mkdir -p <repo>/.archive/skills
-git mv active-skills/<old-skill> <repo>/.archive/skills/<old-skill>
+git mv skills/<old-skill> <repo>/.archive/skills/<old-skill>
 ```
 
-`.archive/` at the repo root sits outside `active-skills/`, so archived skills
+`.archive/` at the repo root sits outside `skills/`, so archived skills
 stop being discovered while their full package stays in the tree and in git
 history. (Plain `git rm` is the alternative if the maintainer prefers
 history-only recovery — but `git mv` keeps the package inspectable for
@@ -170,14 +169,13 @@ at it. The scan's `referenced_by` field lists skills whose SKILL.md mentions the
 target; also search the whole repo:
 
 ```bash
-grep -rn "<old-skill>" <repo> --include='*.md' --include='*.txtpb' --include='*.json' \
+grep -rn "<old-skill>" <repo> --include='*.md' --include='*.json' \
   | grep -v "/.archive/"
 ```
 
 For every hit, repoint it at the umbrella (the `absorbed_into` target) or remove
 it if truly pruned:
 
-- **`EVAL.txtpb`** — update any `expected_skills: "active-skills/<old>"` to the umbrella, or drop the case if the behavior moved.
 - **Sibling SKILL.md bodies** — rewrite "see the `<old>` skill" pointers to the umbrella.
 - **The umbrella's own evals** — fold in the archived skill's meaningful eval prompts.
 

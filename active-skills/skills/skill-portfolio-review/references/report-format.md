@@ -87,21 +87,20 @@ runs them verbatim. Use this template per change:
 - **Mechanism:** merge-into-existing <umbrella> | create-new-umbrella <name> | demote <x> into <umbrella>
 - **Package integrity:** <support files + skill_md_links that must travel together, or "clean — SKILL.md only">
 - **Steps (run in order):**
-  1. <exact op — e.g.> Patch `active-skills/<umbrella>/SKILL.md`: add section `## <label>` containing <the sibling's unique insight, summarized or quoted>.
-  2. <e.g.> `git mv active-skills/<sib>/references/<f>.md active-skills/<umbrella>/references/<f>.md` and rewrite the link in `active-skills/<umbrella>/SKILL.md` from `references/<f>.md`.
-  3. <e.g.> Archive the sibling: `git mv active-skills/<sib> .archive/skills/<sib>`.
+  1. <exact op — e.g.> Patch `skills/<umbrella>/SKILL.md`: add section `## <label>` containing <the sibling's unique insight, summarized or quoted>.
+  2. <e.g.> `git mv skills/<sib>/references/<f>.md skills/<umbrella>/references/<f>.md` and rewrite the link in `skills/<umbrella>/SKILL.md` from `references/<f>.md`.
+  3. <e.g.> Archive the sibling: `git mv skills/<sib> .archive/skills/<sib>`.
   4. **Migrate references** (from scan `referenced_by` + repo grep):
-     - `EVAL.txtpb`: change `expected_skills: "active-skills/<sib>"` → `"active-skills/<umbrella>"` (case `<name>`).
-     - `active-skills/<other>/SKILL.md`: repoint "see <sib>" → `<umbrella>`.
-     - Fold `active-skills/<sib>/evals/evals.json` meaningful prompts into `active-skills/<umbrella>/evals/evals.json`.
-  5. **Verify:** re-run `portfolio_scan.py` and `grep -rn "<sib>" <repo> --include='*.md' --include='*.txtpb' --include='*.json' | grep -v '/.archive/'` returns nothing.
+     - `skills/<other>/SKILL.md`: repoint "see <sib>" → `<umbrella>`.
+     - Fold `skills/<sib>/evals/evals.json` meaningful prompts into `skills/<umbrella>/evals/evals.json`.
+  5. **Verify:** re-run `portfolio_scan.py` and `grep -rn "<sib>" <repo> --include='*.md' --include='*.json' | grep -v '/.archive/'` returns nothing.
 ```
 
 Rules that make the spec safe to execute blind:
 
 - **Order matters.** Create/patch the umbrella *before* archiving siblings; migrate references *after* the target exists.
 - **Whole packages only.** If `package integrity` is not "clean", move every listed support file and rewrite its path — never flatten only a SKILL.md.
-- **No dangling paths.** The migrate + verify steps are mandatory, not optional; every inbound `active-skills/<sib>` reference must be repointed or removed.
+- **No dangling paths.** The migrate + verify steps are mandatory, not optional; every inbound `skills/<sib>` reference must be repointed or removed.
 - **Exact strings.** Give real paths, real `git mv` commands, and the real reference locations — not "update references as needed".
 
 ---
@@ -129,12 +128,12 @@ sections/support files to add to the existing umbrella and from where.
 
 ## Removals table
 
-Every skill leaving `active-skills/` appears here, with its disposition:
+Every skill leaving `skills/` appears here, with its disposition:
 
 | Skill        | Disposition                          | Reason (one sentence)                       | Archive command                                     |
 | ------------ | ------------------------------------ | ------------------------------------------- | --------------------------------------------------- |
-| `<sib>`      | consolidated into `<umbrella>`       | <why it's not its own class>                | `git mv active-skills/<sib> .archive/skills/<sib>`  |
-| `<stale>`    | pruned (no forwarding target)        | <why obsolete/irrelevant>                   | `git mv active-skills/<stale> .archive/skills/<stale>` |
+| `<sib>`      | consolidated into `<umbrella>`       | <why it's not its own class>                | `git mv skills/<sib> .archive/skills/<sib>`  |
+| `<stale>`    | pruned (no forwarding target)        | <why obsolete/irrelevant>                   | `git mv skills/<stale> .archive/skills/<stale>` |
 
 "Consolidated" means its content was absorbed into an umbrella; "pruned" means
 archived with nothing forwarded. Every row must match exactly one entry in the
