@@ -57,9 +57,15 @@ def check_for_updates():
         local_version = prev_status.get('local_version', '0.0.0')
 
     # 2. Fetch remote plugin.json
-    # Source of truth is this repo, not a marketplace: marketplaces reference it
-    # rather than vendoring a copy, so a new version always appears here first.
-    remote_url = 'https://raw.githubusercontent.com/mlarkin00/active-skills/main/plugin.json'
+    # The version lives in the marketplace repo, NOT in the skills-authoring repo.
+    # mlarkin00/active-skills went skills-only in the 2026-07-22 restructure and
+    # carries no manifest at all; this URL used to point there and returned 404 on
+    # every run, so the check silently reported "preserving last known state"
+    # forever. sync-active-skills.yml owns the version and patch-bumps the manifest
+    # below on every mirrored change, so it is the earliest place a new version
+    # appears.
+    remote_url = ('https://raw.githubusercontent.com/mlarkin00/plugins'
+                  '/main/active-skills/plugin.json')
     remote_version = None
     fetch_error = None
     try:

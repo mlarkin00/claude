@@ -1,12 +1,28 @@
 import os
 import sys
 import unittest
+import pathlib
 from unittest.mock import patch, mock_open, MagicMock
 
 # Ensure sidecar path can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../sidecars/check-updates')))
 
 class TestCheckUpdates(unittest.TestCase):
+
+    def test_remote_url_targets_the_marketplace_repo(self):
+        """The version lives in mlarkin00/plugins, not the skills-authoring repo.
+
+        Every other test in this file mocks urlopen, so none of them can notice
+        the URL rotting. This one reads the source: the checker pointed at
+        mlarkin00/active-skills, which went skills-only and has no manifest, so
+        the fetch 404'd on every run and the check reported "preserving last
+        known state" indefinitely.
+        """
+        src = (pathlib.Path(__file__).resolve().parents[1]
+               / "sidecars" / "check-updates" / "check_updates.py").read_text(encoding="utf-8")
+        self.assertIn("raw.githubusercontent.com/mlarkin00/plugins", src)
+        self.assertIn("/active-skills/plugin.json", src)
+        self.assertNotIn("mlarkin00/active-skills/main/plugin.json", src)
 
     def test_parse_version(self):
         """Test semantic version parsing edge cases and robust formatting."""
