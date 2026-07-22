@@ -35,7 +35,7 @@ python3 -c "import json;[json.load(open(f)) and print('OK',f) for f in ['.claude
 
 ## Style & Conventions
 
-- Each skill MUST live in `skills/<skill-name>/` with a `SKILL.md`, and `skills/` MUST contain **nothing but skill directories**. Antigravity installs every entry there as a skill, so a loose file becomes a phantom skill — this is why `EVAL.txtpb` lives in `evals/`. `agy plugin validate .` reports the count, so a jump of one is the symptom.
+- Each skill MUST live in `skills/<skill-name>/` with a `SKILL.md`, and `skills/` MUST contain **nothing but skill directories**. Antigravity installs every entry there as a skill, so a loose file becomes a phantom skill. `agy plugin validate .` reports the count, so a jump of one is the symptom.
 - Run `gen-readme.sh` after any skill change. The block between `<!-- SKILLS:START -->` and `<!-- SKILLS:END -->` is generated and MUST NOT be hand-edited.
 - **Bump the `version` in both manifests to ship.** Plugin caches are version-keyed; the mirror carries the change, but without a version bump no cache refetches it. The sync workflow warns when content changed but the version did not.
 

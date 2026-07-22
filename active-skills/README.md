@@ -25,7 +25,7 @@ agy plugin install https://github.com/mlarkin00/active-skills
 
 ## Authoring
 
-Each skill is a directory under `skills/` containing a `SKILL.md`. That is the whole contract — `skills/` must contain **nothing but skill directories**, because Antigravity installs every entry there as a skill and a loose file becomes a phantom skill in its UI. The eval suite lives in `evals/` for that reason.
+Each skill is a directory under `skills/` containing a `SKILL.md`. That is the whole contract — `skills/` must contain **nothing but skill directories**, because Antigravity installs every entry there as a skill and a loose file becomes a phantom skill in its UI.
 
 After adding, removing, or retitling a skill, regenerate the inventory below:
 
@@ -40,7 +40,6 @@ To publish: **bump the `version` in `plugin.json` and `.claude-plugin/plugin.jso
 | Path | Purpose |
 |---|---|
 | `skills/` | The skills. Only skill directories belong here. |
-| `evals/` | Eval suite, kept out of `skills/` on purpose. |
 | `scripts/gen-readme.sh` | Regenerates the inventory below. |
 | `sidecars/check-updates/` | Antigravity: periodic update check. |
 | `tests/` | Tests for the update-check sidecar. |
