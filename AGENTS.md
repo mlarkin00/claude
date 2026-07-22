@@ -42,6 +42,11 @@ grep -n 'PLUGINS=' .github/workflows/release.yml
 # Claude: validate a plugin or the marketplace manifest
 claude plugin validate <plugin>|.
 
+# Claude: adopt a released fix. The name MUST be qualified (a bare name exits
+# "Plugin not found"), restart after, and confirm installed_plugins.json moved —
+# `details` shows the newest cached version, not the loaded one.
+claude plugin marketplace update mlarkin00-plugins && claude plugin update <plugin>@mlarkin00-plugins
+
 # Antigravity: the ONLY reliable check is a bulk install into a throwaway HOME.
 # `agy plugin validate <path>` hard-fails on any plugin lacking a root plugin.json.
 HOME=$(mktemp -d) agy plugin install "$PWD"
@@ -63,17 +68,7 @@ HOME=$(mktemp -d) agy plugin install "$PWD"
 
 ## Architecture & Constraints
 
-**Not every component type works on both runtimes.** Verified 2026-07-22 by live sessions, not by reading the installer:
-
-| Component | Claude | Antigravity |
-|---|---|---|
-| `skills/` | yes | yes |
-| `hooks` | yes | yes — from root `hooks.json` only |
-| `commands/` | yes (surfaced as skills) | converted **only** on the claude-format path, i.e. when the plugin has no root `plugin.json` |
-| `agents/` | yes | **no** — installed, counted, and unreachable |
-| `sidecars/` | n/a | **no** — `agy` reads `<config>/sidecars/`, never a plugin's own |
-
-Design around it: anything a plugin needs to *do* on Antigravity has to be a skill or a hook.
+**Not every component type works on both runtimes.** Skills and hooks work on both; `agents/` install on Antigravity and are unreachable there; `sidecars/` are never loaded from a plugin at all; `commands/` convert only on the claude-format path. Full matrix and the evidence: `@.agents/wiki/antigravity/component-support.md`. Design around it — anything a plugin must *do* on Antigravity has to be a skill or a hook.
 
 **Two independent release paths.** `release.yml` fires on every push to `main`, patch-bumps any plugin in its `PLUGINS` list with release-relevant changes, commits as `github-actions[bot]`, tags `<plugin>-v<version>`, and cuts a GitHub release. It guards against its own push with `if: github.actor != 'github-actions[bot]'`. `sync-active-skills.yml` is separate and owns `active-skills`.
 

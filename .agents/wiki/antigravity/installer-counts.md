@@ -36,6 +36,10 @@ a bulk install into a throwaway `HOME`:
 HOME=$(mktemp -d) agy plugin install "$PWD"
 ```
 
+Claude Code has the same class of trap in a different place — a command
+whose output you did not read, and a `details` view that resolves a version the
+session is not running: [plugin updates](../claude-code/plugin-updates.md).
+
 # Citations
 
 [1] [mlarkin00/plugins](https://github.com/mlarkin00/plugins)
