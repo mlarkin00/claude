@@ -26,10 +26,17 @@ tools:
   - Bash
 ---
 
-Run the memory pull script and report the result:
+Locate the pull script — it differs per runtime — then run it:
 
 ```bash
-bash ~/.claude/scripts/memory-pull.sh
+ls -d ~/.claude/scripts/memory-pull.sh ~/.gemini/config/plugins/agent-memory/scripts/memory-pull.sh ~/.claude/plugins/cache/*/agent-memory/*/scripts/memory-pull.sh 2>/dev/null
+```
+
+Use the first that exists **in the order listed above**, not the order `ls`
+prints — it sorts. Then:
+
+```bash
+bash <the path you chose>
 ```
 
 If the script exits with a warning (e.g. fetch failed, repo missing), explain what it means and suggest running the `bootstrap-memory` agent if the repo is missing.

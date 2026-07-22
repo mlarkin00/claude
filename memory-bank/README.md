@@ -81,7 +81,7 @@ memory-bank/
 │   ├── set_project_scope.py     re-scope global → project
 │   ├── create_engine.py         one-time engine provisioning
 │   ├── import_cc_memories.py    import ~/.claude/memory/*.md into GCP
-│   └── install-symlinks.sh      wires skills + scripts into ~/.claude/
+│   └── install-symlinks.sh      links the scripts into ~/.claude/scripts/memory-bank/
 └── skills/
     ├── memory-bank/             /memory-bank — save a high-priority fact immediately
     ├── memories-add/            /memories-add — add a fact

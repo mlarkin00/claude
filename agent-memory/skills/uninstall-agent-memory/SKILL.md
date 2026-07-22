@@ -84,8 +84,23 @@ echo "✓ Memory repository deleted"
 
 ## Step 4: Uninstall the plugin
 
+Use the command for the runtime you are running in — and if the user has both,
+run both, since each keeps its own copy of the plugin:
+
 ```bash
+# Claude Code
 claude plugin uninstall agent-memory
+
+# Antigravity
+agy plugin uninstall agent-memory
+```
+
+Steps 1 and 2 above are Claude Code only: `~/.claude/scripts`, `~/.claude/memory`
+and `settings.json` do not exist on an Antigravity-only machine, so the `rm -f`
+and the settings edit are harmless no-ops there. Nothing else needs unwiring for
+Antigravity — its hooks live inside the plugin directory and go with it.
+
+```bash
 echo "✓ Plugin uninstalled"
 ```
 

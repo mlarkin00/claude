@@ -33,4 +33,4 @@ python3 -m unittest discover -s tests -v              # run tests (stdlib unitte
 - `sidecar_consolidate.py` → ≤once/24h, walks `~/.claude/projects/**/*.jsonl`.
 - `config.py` → reads `../.claude-plugin/plugin.json` via `os.path.realpath(__file__)` — MUST be `realpath`, not `abspath`; symlinks break `abspath`.
 - Hook commands use `$CLAUDE_PLUGIN_ROOT`.
-- Skills call scripts via `~/.claude/scripts/memory-bank/`.
+- Skills resolve the scripts directory at run time: `~/.claude/scripts/memory-bank`, else `~/.gemini/config/plugins/memory-bank/scripts` (Antigravity), else `~/.claude/plugins/cache/*/memory-bank/*/scripts`. Never `$CLAUDE_PLUGIN_ROOT` — hook-only, empty in a model-run command.

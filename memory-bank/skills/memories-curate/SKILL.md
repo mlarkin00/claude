@@ -7,11 +7,17 @@ Curate all memories in the GCP Memory Bank by invoking the deployed memory-minio
 
 ## Steps
 
-1. Run the deployed curator synchronously and capture its summary:
+1. Locate the scripts directory — it differs per runtime:
    ```bash
-   python3 ~/.claude/scripts/memory-bank/nudge_minion.py --wait
+   ls -d ~/.claude/scripts/memory-bank ~/.gemini/config/plugins/memory-bank/scripts ~/.claude/plugins/cache/*/memory-bank/*/scripts 2>/dev/null
    ```
-2. The script prints a JSON summary like `{"reviewed": N, "updated": N, "deleted": N, "named": N}`. Report to the user:
+   Use the first that exists **in the order listed above**, not the order `ls`
+   prints — it sorts. Call it `<SCRIPTS>`.
+2. Run the deployed curator synchronously and capture its summary:
+   ```bash
+   python3 <SCRIPTS>/nudge_minion.py --wait
+   ```
+3. The script prints a JSON summary like `{"reviewed": N, "updated": N, "deleted": N, "named": N}`. Report to the user:
    `Curated N memories: X rewritten, Y duplicates removed, Z named.`
 
 ## Rules

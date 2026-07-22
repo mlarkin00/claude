@@ -98,10 +98,16 @@ The symlink `~/.claude/memory` → `~/.agents/agent-memory` makes this directory
 Run the health check:
 
 ```bash
+# Claude Code — via the symlink install-symlinks.sh maintains
 bash ~/.claude/scripts/verify-memory.sh
+
+# Antigravity — the plugin's own copy
+bash ~/.gemini/config/plugins/agent-memory/scripts/verify-memory.sh
 ```
 
 No output means the system is healthy. Warning lines prompt you to run the bootstrap agent.
+
+The `verify-memory` skill picks the right one for you; it exists in two places because each runtime installs the plugin somewhere different, and `$CLAUDE_PLUGIN_ROOT` is set for hooks only.
 
 ---
 

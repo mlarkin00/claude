@@ -8,12 +8,18 @@ Re-scope a global memory to the current project.
 ## Steps
 
 1. If the memory ID is not provided, run `/memories-list` first to find it.
-2. Run:
+2. Locate the scripts directory — it differs per runtime:
    ```bash
-   python3 ~/.claude/scripts/memory-bank/set_project_scope.py "<memory_id>"
+   ls -d ~/.claude/scripts/memory-bank ~/.gemini/config/plugins/memory-bank/scripts ~/.claude/plugins/cache/*/memory-bank/*/scripts 2>/dev/null
+   ```
+   Use the first that exists **in the order listed above**, not the order `ls`
+   prints — it sorts. Call it `<SCRIPTS>`.
+3. Run:
+   ```bash
+   python3 <SCRIPTS>/set_project_scope.py "<memory_id>"
    ```
    This fetches the fact, creates a project-scoped copy, and deletes the global original.
-3. Confirm: `✓ Re-scoped: <old_id> → <new_id> (project scope)`
+4. Confirm: `✓ Re-scoped: <old_id> → <new_id> (project scope)`
 
 ## Rules
 

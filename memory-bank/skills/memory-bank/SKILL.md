@@ -8,11 +8,17 @@ Save the fact to the GCP Memory Bank immediately. Do NOT ask for confirmation �
 ## Steps
 
 1. Determine scope: `global` (default) unless the user explicitly says "project memory" or "project scope".
-2. Run:
+2. Locate the scripts directory — it differs per runtime:
    ```bash
-   python3 ~/.claude/scripts/memory-bank/add_memory.py "<fact>" --scope <global|project>
+   ls -d ~/.claude/scripts/memory-bank ~/.gemini/config/plugins/memory-bank/scripts ~/.claude/plugins/cache/*/memory-bank/*/scripts 2>/dev/null
    ```
-3. Confirm with one line: `✓ Saved to Memory Bank: <fact[:60]>… (<scope>)`
+   Use the first that exists **in the order listed above**, not the order `ls`
+   prints — it sorts. Call it `<SCRIPTS>`.
+3. Run:
+   ```bash
+   python3 <SCRIPTS>/add_memory.py "<fact>" --scope <global|project>
+   ```
+4. Confirm with one line: `✓ Saved to Memory Bank: <fact[:60]>… (<scope>)`
 
 ## Rules
 
