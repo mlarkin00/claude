@@ -40,7 +40,7 @@ session — two plain commands are what survive a permission allowlist.
 Interpret the output:
 
 - **No output:** All checks passed. Memory system is healthy.
-- **`[verify-memory] ⚠ ...` lines:** Structural problem found. Tell the user exactly what was reported, then **offer to run bootstrap yourself** — do not just tell them to run it. If they agree, use the Agent tool to invoke the `bootstrap-memory` subagent with this prompt: `"Bootstrap the agent memory system. The verify-memory check reported these issues: <paste the warning lines>. Work through all 8 steps and report status for each."` Use `subagent_type: "agent-memory:bootstrap-memory"`. **Antigravity has no plugin subagents** — if that agent is not available to you, do not report failure: read `agents/bootstrap-memory.md` from the plugin directory alongside this skill and work through its steps yourself.
+- **`[verify-memory] ⚠ ...` lines:** Structural problem found. Tell the user exactly what was reported, then **offer to run bootstrap yourself** — do not just tell them to run it. If they agree, follow the `bootstrap-memory` skill, which locates and runs an idempotent provisioning script. Re-running it on a partly-healthy machine is safe.
 - **Tier 1 fixes applied silently:** The script fixed minor issues (symlink recreation, missing MEMORY.md) without output. No action needed.
 - **Git output on stderr but no `[verify-memory] ⚠` lines:** A Tier 1 fix ran and committed/pushed to GitHub. Normal — no user action needed.
 

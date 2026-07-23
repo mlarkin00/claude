@@ -16,6 +16,7 @@ rm -f \
   ~/.claude/scripts/memory-pull.sh \
   ~/.claude/scripts/memory-push.sh \
   ~/.claude/scripts/verify-memory.sh \
+  ~/.claude/scripts/bootstrap-memory.sh \
   ~/.claude/agents/memory-puller.md \
   ~/.claude/agents/memory-pusher.md \
   ~/.claude/skills/verify-memory.md \
@@ -79,7 +80,7 @@ echo "✓ Memory repository deleted"
 
 ```
 → Memory data preserved at ~/.agents/agent-memory
-  You can re-install the plugin later and run bootstrap-memory to reconnect it.
+  You can re-install the plugin later and use the bootstrap-memory skill to reconnect it.
 ```
 
 ## Step 4: Uninstall the plugin
