@@ -1,11 +1,11 @@
 ---
 name: enrich
-description: Use when the user invokes /llm-wiki:enrich or asks to re-enrich specific concept docs. Fans out okf-concept-enricher subagents for the named concepts (or all concepts if none specified).
+description: Use when the user invokes /llm-wiki:enrich or asks to re-enrich specific concept docs. Re-authors the named concepts (or all concepts if none specified), one doc per concept, following authoring-concepts.
 ---
 
 # /llm-wiki:enrich — Re-enrich Concept Docs
 
-Re-runs enrichment on specific concepts (or all) using the `okf-concept-enricher` agent. Useful for refreshing stale docs after a source schema change.
+Re-runs enrichment on specific concepts (or all). Each concept is re-authored by following the `authoring-concepts` skill. Useful for refreshing stale docs after a source schema change.
 
 ## Usage
 
@@ -29,11 +29,7 @@ Without arguments, re-enriches ALL concepts in the bundle.
    - For other concepts, re-read the raw source if available in `raw/`.
    - If no live source is available, enrich from the existing doc + context alone.
 
-4. Fan out `okf-concept-enricher` subagents in parallel (one per concept). Each agent:
-   - Reads existing doc
-   - Gets fresh raw metadata
-   - Writes augmented doc via `okf_doc.py write`
-   - The PostToolUse hook validates each write
+4. Author each concept by following `authoring-concepts` — read existing doc, get fresh raw metadata, write the augmented doc via `okf_doc.py write` (the PostToolUse hook validates each write). Dispatch per the runtime: on Claude Code fan out one `general-purpose` subagent per concept to run them in parallel; on Antigravity, which cannot invoke dispatchable subagents, do them sequentially. See `ingesting-sources` § Per-concept dispatch for the shared contract.
 
 5. Report: N docs updated, M unchanged, any errors.
 

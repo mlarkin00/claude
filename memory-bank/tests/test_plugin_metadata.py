@@ -17,6 +17,26 @@ class TestPluginMetadata(unittest.TestCase):
         self.assertIn('location', cfg)
         self.assertIn('reasoning_engine_id', cfg)
 
+    def test_no_agents_directory(self):
+        # The agent layer was removed in 0.1.24: Antigravity installs plugin
+        # agents but cannot invoke them. bootstrap-memory-bank is now a skill
+        # over scripts/bootstrap.py. A stray agents/ dir would resurrect a
+        # component that only works on one runtime.
+        self.assertFalse(
+            os.path.isdir(os.path.join(BASE_DIR, 'agents')),
+            "memory-bank should ship no agents/ directory",
+        )
+
+    def test_bootstrap_skill_and_script_present(self):
+        self.assertTrue(
+            os.path.isfile(os.path.join(BASE_DIR, 'skills', 'bootstrap-memory-bank', 'SKILL.md')),
+            "bootstrap-memory-bank skill is missing",
+        )
+        self.assertTrue(
+            os.path.isfile(os.path.join(BASE_DIR, 'scripts', 'bootstrap.py')),
+            "scripts/bootstrap.py is missing",
+        )
+
     def test_hooks_file_exists_and_has_correct_structure(self):
         hooks_path = os.path.join(BASE_DIR, 'hooks', 'hooks.json')
         self.assertTrue(os.path.exists(hooks_path), "hooks/hooks.json is missing")

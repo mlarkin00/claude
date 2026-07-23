@@ -1,11 +1,11 @@
 ---
 name: lint
-description: Use when the user invokes /llm-wiki:lint or asks for a health check on an OKF bundle. Runs mechanical stats via okf_stats.py and semantic audit via the okf-linter agent, then produces a prioritized fix-it report.
+description: Use when the user invokes /llm-wiki:lint or asks for a health check on an OKF bundle. Runs mechanical stats via okf_stats.py and the semantic audit from maintaining-okf, then produces a prioritized fix-it report.
 ---
 
 # /llm-wiki:lint — Bundle Health Check
 
-Combines mechanical stats (`okf_stats.py`) with a semantic audit (`okf-linter` agent) into a prioritized fix-it report.
+Combines mechanical stats (`okf_stats.py`) with the semantic audit from the `maintaining-okf` skill into a prioritized fix-it report.
 
 ## Usage
 
@@ -28,7 +28,7 @@ Combines mechanical stats (`okf_stats.py`) with a semantic audit (`okf-linter` a
    python3 <plugin_root>/scripts/okf_validate.py <bundle_root>
    ```
 
-3. **Semantic audit** — dispatch `okf-linter` agent for the deep read. See `maintaining-okf` skill for what to look for.
+3. **Semantic audit** — run the audit procedure in the `maintaining-okf` skill for the deep read (what to look for, the rules, and the findings shape). On Claude Code you may dispatch it into a `general-purpose` subagent to isolate a large bundle read; on Antigravity run it inline.
 
 4. **Synthesize** the combined report:
 

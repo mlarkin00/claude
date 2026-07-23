@@ -68,9 +68,10 @@ pip install google-genai                    # optional: LLM index descriptions
 ## Architecture
 
 - **Scripts** (deterministic): `okf_doc.py`, `okf_validate.py`, `okf_index.py`, `okf_discover.py`, `okf_visualize.py`, `okf_fetch.py`, `okf_bq.py`, `okf_search.py`, `okf_stats.py`
-- **Skills** (judgment): `okf-spec`, `authoring-concepts`, `ingesting-sources`, `ingesting-web`, `ingesting-bigquery`, `maintaining-okf`, `querying-okf`
-- **Agents**: `okf-concept-enricher`, `okf-web-crawler`, `okf-linter`, `okf-source-scout`
+- **Skills** (judgment): `okf-spec`, `authoring-concepts`, `ingesting-sources`, `ingesting-web`, `ingesting-bigquery`, `maintaining-okf`, `finding-sources`, `querying-okf`, plus the `/llm-wiki:*` command skills
 - **Hook**: PostToolUse validates every `.md` write for OKF §9 conformance
+
+There are no agents. The former per-concept enricher, web crawler, linter, and source scout are the `authoring-concepts`, `ingesting-web`, `maintaining-okf`, and `finding-sources` skills — Antigravity installs plugin agents but cannot invoke them, so work that must run on both runtimes is a skill. Parallel fan-out (many concepts at once) is a dispatch choice inside those skills: parallel `general-purpose` subagents on Claude Code, sequential on Antigravity.
 
 ## Provenance
 

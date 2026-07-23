@@ -29,6 +29,15 @@ and `self`. They are not converted to skills either.
 **Consequence:** anything whose remediation is "run the X agent" cannot happen on
 Antigravity. Design so that whatever a plugin must *do* there is a skill or a hook.
 
+The fix is to move the agent's procedure into a skill (for judgement-driven work)
+or a script the skill calls (for a fixed sequence), keeping **one** copy so the
+two runtimes cannot drift. Confirmed on **agy 1.1.5**: after `agent-memory`'s
+three agents became the `bootstrap-memory` and `sync-memory` skills, a bulk
+install reported `skills: 5 processed / agents: skipped (not found)`, `agy plugin
+list` recorded the plugin's components as `["skills", "hooks"]`, and a live `agy`
+session with tools disabled confirmed both new skills were loaded and named. A
+skill reaches the session; an agent does not.
+
 ## Sidecars never run
 
 The CLI starts no sidecar manager, so a sidecar is inert wherever it is placed —

@@ -15,7 +15,11 @@ Durable runtime behaviour learned that day lives in the OKF bundle at
 
 ## P1 — Important / Unblocking
 
-- [ ] **[P1]** Plugin agents install but cannot be invoked under Antigravity — all eight (`agent-memory` 3, `memory-bank` 1, `llm-wiki` 4) are copied to `plugins/<name>/agents/` and counted at install (`agents : 3 processed`), but `agy agents` lists nothing and a live session asked directly answered **"NO PLUGIN SUBAGENTS"**, offering only the built-in `research` and `self`. They are not converted to skills either. The agent layer of three plugins is therefore inert on that runtime: anything that says "run the bootstrap-memory agent" — including `verify-memory.sh`'s own remediation message — has no way to happen there. **Fix:** decide whether these become skills for Antigravity (the only component type that demonstrably loads) or whether the plugins document agents as Claude-only. Note the frontmatter fix that landed in agent-memory 0.3.8 restored these agents' descriptions and tool restrictions for Claude Code only — on Antigravity they remain unreachable regardless, which is what this item is about.
+(none — the plugin-agents item was resolved 2026-07-23: all eight agents across
+`agent-memory`, `memory-bank` and `llm-wiki` became skills and scripts, so no
+plugin ships an `agents/` directory. Evidence and the resulting convention are
+in `.agents/wiki/antigravity/component-support.md` and the root briefings'
+"No plugin here ships an `agents/` directory" rule.)
 
 ## P2 — Nice-to-Have
 

@@ -33,6 +33,7 @@ link_file() {
 # Scripts. The hooks call these through ~/.claude/scripts rather than
 # $CLAUDE_PLUGIN_ROOT, so the link is what keeps them reachable across the
 # version-keyed plugin cache path changing on every release.
-link_file "$CLAUDE_PLUGIN_ROOT/scripts/memory-pull.sh"   "$SCRIPTS_DIR/memory-pull.sh"
-link_file "$CLAUDE_PLUGIN_ROOT/scripts/memory-push.sh"   "$SCRIPTS_DIR/memory-push.sh"
-link_file "$CLAUDE_PLUGIN_ROOT/scripts/verify-memory.sh" "$SCRIPTS_DIR/verify-memory.sh"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/memory-pull.sh"      "$SCRIPTS_DIR/memory-pull.sh"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/memory-push.sh"      "$SCRIPTS_DIR/memory-push.sh"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/verify-memory.sh"    "$SCRIPTS_DIR/verify-memory.sh"
+link_file "$CLAUDE_PLUGIN_ROOT/scripts/bootstrap-memory.sh" "$SCRIPTS_DIR/bootstrap-memory.sh"

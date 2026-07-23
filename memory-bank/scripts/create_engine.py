@@ -7,7 +7,7 @@ import urllib.error
 import subprocess
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import get_plugin_config
+from config import get_plugin_config, set_reasoning_engine_id
 
 def build_payload(display_name, description, project, location):
     return {
@@ -92,7 +92,8 @@ def run_creation(project, location, display_name, description):
                 if engine_id:
                     print(f"\nCreated. Engine ID: {engine_id}")
                     print(f"Full name: projects/{project}/locations/{location}/reasoningEngines/{engine_id}")
-                    print(f'\nAdd to .claude-plugin/plugin.json "config": {{"reasoning_engine_id": "{engine_id}"}}')
+                    written = set_reasoning_engine_id(engine_id)
+                    print(f'Wrote config.reasoning_engine_id to {written}')
                     return engine_id
                 else:
                     print(f"Operation failed: {status.get('error')}", file=sys.stderr)

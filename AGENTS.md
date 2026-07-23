@@ -75,6 +75,8 @@ for p in active-skills llm-wiki memory-bank skill-usage; do (cd $p && python3 -m
 
 **Not every component type works on both runtimes.** Skills and hooks work on both; `agents/` install on Antigravity and are unreachable there; sidecars never run there at all, because the CLI starts no sidecar manager; `commands/` convert only on the claude-format path. Full matrix and the evidence: `@.agents/wiki/antigravity/component-support.md`. Design around it — anything a plugin must *do* on Antigravity has to be a skill or a hook.
 
+**No plugin here ships an `agents/` directory.** As of 2026-07-23 the eight former agents across `agent-memory`, `memory-bank` and `llm-wiki` are skills and scripts — an agent that installs but cannot be invoked is worse than none, because a skill that dispatches it becomes an unfollowable instruction. Parallel fan-out is not a component type; it is a dispatch choice inside a skill (a `general-purpose` subagent per unit on Claude Code, sequential on Antigravity). Keep one procedure per task so the runtimes cannot drift. If you add an agent, it is Claude-only by construction — prefer a skill.
+
 **Two independent release paths.** `release.yml` fires on every push to `main`, patch-bumps any plugin in its `PLUGINS` list with release-relevant changes, commits as `github-actions[bot]`, tags `<plugin>-v<version>`, and cuts a GitHub release. It guards against its own push with `if: github.actor != 'github-actions[bot]'`. `sync-active-skills.yml` is separate and owns `active-skills`.
 
 `active-skills` MUST stay out of `release.yml`. The sync job commits to `main` on its own; a second versioner would let a rebase race onto a competing bump and produce conflicting or duplicate `active-skills-v<N>` tags.

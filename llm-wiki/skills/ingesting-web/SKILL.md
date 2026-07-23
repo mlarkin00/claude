@@ -1,13 +1,18 @@
 ---
 name: ingesting-web
-description: Use when ingesting web pages into an OKF bundle. Covers the self-driven crawl, four-gate reference test, required metric/join/dimension extractions, and strict augmentation rules. Delegates actual fetching to okf-web-crawler agent.
+description: Use when ingesting web pages into an OKF bundle. Covers the self-driven crawl, four-gate reference test, required metric/join/dimension extractions, and strict augmentation rules. Drives the crawl with okf_fetch.py.
 ---
 
 # Web Ingestion into an OKF Bundle
 
 Port of `knowledge-catalog/okf/src/enrichment_agent/prompts/web_ingestion_instruction.md`.
 
-Dispatch the `okf-web-crawler` agent for multi-page crawls. For a single URL, you can work inline using `okf_fetch.py`.
+This skill is the full crawl procedure — the workflow, gates, and augmentation
+rules below are everything the retired `okf-web-crawler` agent did. Drive it with
+`okf_fetch.py`, whose state file caps the page budget so the crawl cannot run
+away. On Claude Code you may dispatch the crawl into a `general-purpose` subagent
+to isolate a long multi-page run; on Antigravity (no dispatchable subagents) run
+it inline. A single URL is always fine to do inline.
 
 ## Workflow
 

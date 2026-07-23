@@ -6,7 +6,7 @@ OKF v0.1 knowledge bundle manager for Claude Code. Claude authors and maintains 
 
 ## Project Context
 
-Claude Code plugin (`plugin.json` + `skills/` + `agents/` + `hooks/`). Pure Python scripts for deterministic operations; Claude handles all judgment. No Node.js, no build step.
+Cross-runtime plugin (`plugin.json` + `skills/` + `hooks/`), serving Claude Code and Antigravity. Pure Python scripts for deterministic operations; Claude handles all judgment. No Node.js, no build step. No `agents/` — see the split table below.
 
 **Tech stack:** Python 3, PyYAML, markdownify (optional), google-cloud-bigquery (optional), google-genai (optional for `--llm` index mode).
 
@@ -54,9 +54,17 @@ python3 -m unittest discover -s tests -q
 | Layer | What | Who |
 |---|---|---|
 | `scripts/` | I/O, validation, index gen, BM25 search, HTML viz, web fetch, BigQuery metadata | Python (deterministic) |
-| `skills/` | Judgment: ingest routing, enrichment authoring, semantic lint, query synthesis | Claude |
-| `agents/` | Autonomous loop tasks: enricher, crawler, linter, source scout | Claude agents |
+| `skills/` | Judgment: ingest routing, enrichment authoring, semantic lint, query synthesis, the crawl and the source scout | Claude |
 | `hooks/` | PostToolUse: validates every `.md` write for OKF §9 | Shell + Python |
+
+**No `agents/`.** The former enricher, crawler, linter, and source-scout agents
+are skills now (`authoring-concepts`, `ingesting-web`, `maintaining-okf`,
+`finding-sources`), because Antigravity installs plugin agents but cannot invoke
+them — anything a plugin must *do* on both runtimes has to be a skill or a hook.
+The "autonomous loop" the agents provided was parallel fan-out; that is now a
+dispatch choice inside the skills (parallel `general-purpose` subagents on Claude
+Code, sequential on Antigravity), not a component type. One procedure per task,
+so the two runtimes cannot drift. See `ingesting-sources` § Per-concept dispatch.
 
 **Discovery is a first-class feature, not documentation.** A bundle reaches a session only through the host repo's briefing file, and the two runtimes disagree about which file and whether `@` imports expand (verified 2026-07-22 with a codeword fixture: Claude Code 2.1.218 loads `CLAUDE.md` and expands imports but does **not** read `AGENTS.md`; `agy` 1.1.5 loads `AGENTS.md`/`GEMINI.md` but does **not** expand imports; a backticked `` `@path` `` is inert on both). `okf_discover.py` picks the mechanism per file and owns the region between its `<!-- llm-wiki:discovery … -->` markers. The inlined form is a copy, so `/llm-wiki:index` re-runs it with `--sync`. Never replace it with a prose pointer — that is the mechanism this feature exists because it failed.
 **No `commands/` directory.** Claude Code surfaces commands as skills, so a `commands/<n>.md` beside a `skills/<n>/SKILL.md` collided on the name and the command won — the skill body, which holds the actual instructions, never loaded. Each skill carries its own `/llm-wiki:<n>` invocation; do not reintroduce wrappers.

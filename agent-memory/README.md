@@ -31,24 +31,36 @@ gh auth login
 ### 1. Add the marketplace
 
 ```bash
-claude plugin marketplace add mlarkin00/agent-memory-plugin
+claude plugin marketplace add mlarkin00/plugins
 ```
 
 ### 2. Install the plugin
 
 ```bash
-claude plugin install agent-memory
+claude plugin install agent-memory@mlarkin00-plugins
+```
+
+The marketplace qualifier is required — a bare name exits "Plugin not found".
+
+On Antigravity, clone the marketplace repo and bulk-install it instead:
+
+```bash
+agy plugin install <path-to-clone>
 ```
 
 ### 3. Bootstrap
 
-Run the bootstrap agent in a Claude Code session to clone the memory repo and wire up hooks:
+Ask any session to "set up agent memory", which triggers the `bootstrap-memory`
+skill. It clones the memory repo, wires the symlink and sync hooks, migrates any
+legacy memories, and verifies the result.
 
-```
-/agents run agent-memory:bootstrap-memory
+Or run the script directly:
+
+```bash
+bash ~/.claude/scripts/bootstrap-memory.sh
 ```
 
-This is idempotent — safe to run again if anything breaks.
+Either way it is idempotent — safe to run again if anything breaks.
 
 ---
 
@@ -59,22 +71,27 @@ agent-memory-plugin/
 ├── .claude-plugin/
 │   ├── plugin.json          Plugin manifest
 │   └── marketplace.json     Marketplace index
-├── agents/
-│   ├── bootstrap-memory.md  Provisions the memory system on a new machine
-│   ├── memory-puller.md     Manual pull from GitHub
-│   └── memory-pusher.md     Manual push to GitHub
 ├── hooks/
-│   └── hooks.json           SessionStart (pull + verify) and PostToolUse (push) hooks
+│   └── hooks.json           Claude Code: SessionStart (pull + verify), PostToolUse (push)
+├── hooks.json               Antigravity: PreInvocation (pull) and PostToolUse (push)
 ├── scripts/
-│   ├── install-symlinks.sh  Links the scripts below into ~/.claude/scripts
-│   ├── memory-pull.sh       git reset --hard origin/main
-│   ├── memory-push.sh       git add *.md && commit && push
-│   └── verify-memory.sh     Health check with Tier 1 auto-fix and Tier 2 alerts
+│   ├── install-symlinks.sh    Links the scripts below into ~/.claude/scripts
+│   ├── bootstrap-memory.sh    Provisions the memory system on a machine (idempotent)
+│   ├── memory-pull.sh         git reset --hard origin/main
+│   ├── memory-push.sh         git add *.md && commit && push
+│   └── verify-memory.sh       Health check with Tier 1 auto-fix and Tier 2 alerts
 └── skills/
-    ├── add-memory/          Saves a memory immediately without confirmation
-    ├── verify-memory/       Runs health check and offers bootstrap on failure
-    └── uninstall-agent-memory/    Clean removal of all plugin artifacts
+    ├── add-memory/            Saves a memory immediately without confirmation
+    ├── bootstrap-memory/      Sets up or restores the system on a machine
+    ├── sync-memory/           Manual pull from / push to GitHub
+    ├── verify-memory/         Runs health check and offers bootstrap on failure
+    └── uninstall-agent-memory/  Clean removal of all plugin artifacts
 ```
+
+There is no `agents/` directory. It held three agents until 0.3.9, when they
+became the skills and scripts above: Antigravity installs plugin agents but
+cannot invoke them, so anything a plugin must *do* on both runtimes has to be a
+skill or a hook.
 
 ---
 

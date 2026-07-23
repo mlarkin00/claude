@@ -5,7 +5,7 @@ description: Use when the user wants to ingest a new source into an OKF bundle. 
 
 # Ingesting Sources into an OKF Bundle
 
-This skill covers the **supervised ingest loop**: detect source → adapter lists concepts → review plan → fan out enrichers → review diff → suggest index + log.
+This skill covers the **supervised ingest loop**: detect source → adapter lists concepts → review plan → author each concept (see [Per-concept dispatch](#per-concept-dispatch)) → review diff → suggest index + log.
 
 ## Source detection and adapter routing
 
@@ -22,7 +22,7 @@ This skill covers the **supervised ingest loop**: detect source → adapter list
 /llm-wiki:ingest <source>
   1. Detect source type → pick adapter
   2. Adapter lists candidate concepts → present the plan (create/update N docs) → owner confirms/adjusts
-  3. Fan out okf-concept-enricher subagents for THIS source's concepts
+  3. Author THIS source's concepts (see Per-concept dispatch below)
        └ each write goes through okf_doc.py (guarded) → PostToolUse hook re-validates
   4. Present a diff summary of touched docs → owner reviews
   5. Proceed to the next source only on the owner's go
@@ -50,12 +50,28 @@ An adapter = one **skill** (routing, judgment) + an optional **script** (determi
 
 **Adding a new source** (PDF folder, OpenAPI spec, Postgres, CSV): write one new `ingesting-<x>` skill (describing source detection and `describe` output) plus optionally an `okf_<x>.py` script. The `authoring-concepts` skill turns raw metadata into conformant prose the same way regardless of source. No core changes.
 
-## Per-concept enricher dispatch
+## Per-concept dispatch
 
-For N concepts, dispatch N `okf-concept-enricher` subagents in parallel:
+Each concept is authored by following the **`authoring-concepts`** skill — one
+conformant doc written through `okf_doc.py`. This is the canonical dispatch
+contract; the other ingest skills point here.
+
+**How to run the N concepts depends on the runtime, but the procedure does not:**
+
+- **Claude Code** (or any runtime with dispatchable subagents): fan out — invoke
+  a `general-purpose` subagent per concept with the Task tool, each told to
+  follow `authoring-concepts` with the inputs below. This is the parallel path
+  the retired `okf-concept-enricher` agent used to serve.
+- **Antigravity** (no dispatchable subagents — plugin agents install but cannot
+  be invoked): author the concepts **sequentially** in the current session,
+  following `authoring-concepts` for each.
+
+Either way every concept is written exactly once, so the choice is only about
+parallelism, never correctness.
+
+Per-concept inputs to pass:
 
 ```
-okf-concept-enricher inputs:
   - bundle_root: path to the bundle
   - concept_id: e.g. "tables/users"
   - raw_metadata: JSON from adapter describe()
@@ -65,7 +81,9 @@ okf-concept-enricher inputs:
 Output: one write via okf_doc.py → validated by PostToolUse hook
 ```
 
-For large datasets (>~10 concepts), present a progress summary after each batch of ~5 rather than waiting for all.
+For large datasets (>~10 concepts), present a progress summary after each batch
+of ~5 rather than waiting for all — and sequentially, batch in the same way so
+the session stays reviewable.
 
 ## Review before proceeding
 
