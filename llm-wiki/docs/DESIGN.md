@@ -152,7 +152,25 @@ Thin entry points (mostly "activate skill X / dispatch agent Y with these args")
 | `/llm-wiki:stats` | Concepts by type, link/orphan/broken-link/citation coverage. |
 | `/llm-wiki:log <entry>` | Append a dated `log.md` entry (manual, per Decision 3). |
 
-### 6.3 Agents (isolated-context workers)
+### 6.3 Agents (isolated-context workers) — RETIRED, converted to skills in 0.1.7
+
+> **2026-07-23:** This layer no longer ships. Antigravity installs plugin agents
+> but cannot invoke them (`agy agents` lists nothing; a live session answers
+> "NO PLUGIN SUBAGENTS"), so a component that only works on one runtime became a
+> component that works on neither reliably. Each agent's procedure is now a skill
+> — one copy both runtimes run, so they cannot drift:
+>
+> | Former agent | Now |
+> |---|---|
+> | `okf-concept-enricher` | the `authoring-concepts` skill, one doc per concept |
+> | `okf-web-crawler` | the `ingesting-web` skill (it already held the crawl procedure) |
+> | `okf-linter` | the audit procedure in the `maintaining-okf` skill |
+> | `okf-source-scout` | the new `finding-sources` skill (it had no caller) |
+>
+> The isolated-context *parallelism* the agents provided is now a dispatch choice
+> inside those skills: on Claude Code, fan out one `general-purpose` subagent per
+> unit; on Antigravity, run sequentially. See `ingesting-sources` § Per-concept
+> dispatch. The original design rationale is kept below for history.
 
 Used where work is **parallelizable** (per-concept fan-out over a 30-table dataset would blow main context) or **long/deep** (a web crawl, a full audit).
 
