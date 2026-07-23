@@ -1,0 +1,48 @@
+name: Check briefings
+
+# AGENTS.md and CLAUDE.md are hand-propagated twins: Claude Code never reads
+# AGENTS.md and agy never expands `@` imports, so a convention edit made in one
+# and not the other silently leaves one runtime on stale rules. Nothing else
+# catches that, because each runtime only ever sees the file it reads.
+#
+# Deliberately NOT part of release.yml: drifted prose does not make a plugin
+# release unsafe, and wedging releases behind a docs check invites bypassing it.
+# This fails loudly on its own instead.
+
+on:
+  push:
+    branches:
+      - main
+    # GitHub Actions does not expand YAML anchors, so this list is duplicated.
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - .agents/wiki/**
+      - .agents/scripts/check-briefing-twins.py
+      - llm-wiki/scripts/okf_discover.py
+      - .github/workflows/check-briefings.yml
+  pull_request:
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - .agents/wiki/**
+      - .agents/scripts/check-briefing-twins.py
+      - llm-wiki/scripts/okf_discover.py
+      - .github/workflows/check-briefings.yml
+
+jobs:
+  twins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The prose: everything outside the two deliberately divergent regions.
+      - name: AGENTS.md / CLAUDE.md agree outside the two allowed regions
+        run: python3 .agents/scripts/check-briefing-twins.py
+
+      # The discovery block, which the check above skips by design: it is a
+      # generated copy of the wiki catalog and goes stale when a doc is added
+      # or renamed. Without this the bundle silently stops being discoverable.
+      - name: Discovery catalog is in sync with .agents/wiki
+        run: python3 llm-wiki/scripts/okf_discover.py .agents/wiki --check

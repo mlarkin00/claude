@@ -49,6 +49,17 @@ discovery mode: `@`-import in `CLAUDE.md`, inlined catalog in `AGENTS.md`.
 `llm-wiki/scripts/okf_discover.py` picks the mode per file and `--check` fails
 when the inlined copy drifts.
 
+Hand propagation is what makes the twins drift, and a drifted convention is
+invisible for the same reason the mechanism is: each runtime only ever sees the
+file it reads. `.agents/scripts/check-briefing-twins.py` compares the two after
+masking the only two regions allowed to differ — the twin-pointer sentence and
+the discovery block — and also asserts each file carries the discovery mode its
+runtime can use, since swapping them compiles fine and reaches no one. The
+`Check briefings` workflow runs it alongside `okf_discover.py --check`; between
+them the prose and the generated catalog are both covered. It is deliberately
+not part of `release.yml`: drifted prose does not make a plugin release unsafe,
+and a docs check that blocks releases gets bypassed.
+
 This bundle was unreachable on **both** runtimes until 2026-07-22: `AGENTS.md`
 carried the pointer as a backticked `` `@.agents/wiki/index.md` ``, which Claude
 Code would not have expanded even if it had read the file, and which `agy` read

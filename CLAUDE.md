@@ -36,6 +36,10 @@ print('unlisted on disk:', d-{p['name'] for p in m['plugins']} or 'none')"
 # Regenerate the active-skills README inventory (CI runs this after every sync)
 bash active-skills/scripts/gen-readme.sh
 
+# Verify the AGENTS.md / CLAUDE.md twins agree outside their two deliberately
+# divergent regions — run after ANY convention edit (CI runs it too)
+python3 .agents/scripts/check-briefing-twins.py
+
 # Confirm the release workflow names no plugin that has been deleted
 grep -n 'PLUGINS=' .github/workflows/release.yml
 
