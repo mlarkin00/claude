@@ -23,4 +23,4 @@ in `.agents/wiki/antigravity/component-support.md` and the root briefings'
 
 ## P2 — Nice-to-Have
 
-(none)
+- [ ] **[P2]** Extend `check-briefing-twins.py` to the **per-plugin** briefing pairs, or teach it to report which pairs it does not cover. It guards only the root `AGENTS.md`/`CLAUDE.md`, so `memory-bank/AGENTS.md` and `memory-bank/CLAUDE.md` drifted into direct contradiction unnoticed — AGENTS.md described `sidecar_consolidate.py` phase 1 as local Gemini 3.5 Flash curation long after curation moved server-side to memory-minion (fixed 2026-07-23 in `ce734b1`). `llm-wiki` and `memory-bank` both carry such a pair, and `memory-bank` adds a third file (`GEMINI.md`). The twins are deliberately non-identical, so this needs the same normalize-then-diff treatment the root pair gets, not a byte comparison.
