@@ -2,20 +2,20 @@
 
 ## Project Goal
 
-Source of truth for a curated set of agent skills, consumed by Claude Code and Antigravity. This is the **authoring** repo — clone it to edit skills. The `mlarkin00/plugins` marketplace mirrors it via CI, so users install from that single place (Claude marketplace, or a clone of that repo bulk-installed with `agy plugin install <clone>`) and never clone this one.
+The `active-skills` plugin as it ships in the `mlarkin00/plugins` marketplace — installable in both Claude Code and Antigravity. The skills under `skills/` are **authored in `mlarkin00/active-skills`** and mirrored here by the `sync-active-skills.yml` workflow. Everything else in this directory (the two manifests, `scripts/`, `hooks.json`, `tests/`, and docs) is hand-maintained here.
 
 ## Project Context
 
-The repository root **is** the plugin. Two manifests coexist because the runtimes read different paths:
+One directory serves both runtimes, which read different manifest paths:
 
-| Runtime | Manifest | Version |
-|---|---|---|
-| Claude Code | `.claude-plugin/plugin.json` | `0.2.1` |
-| Antigravity | `plugin.json` | `0.1.11` |
+| Runtime | Manifest |
+|---|---|
+| Claude Code | `.claude-plugin/plugin.json` |
+| Antigravity | `plugin.json` |
 
-Versions are deliberately independent — one runtime's fix must not force an empty release for the other. Each runtime ignores the other's files.
+Both manifests carry the **same** version as the `active-skills` entry in the marketplace's `.claude-plugin/marketplace.json`. `skills/` is an rsync mirror of `mlarkin00/active-skills`, overwritten on every sync — never hand-edit it here.
 
-This repo contains **skills and skill-authoring tooling only**. Usage tracking lives in the separate `skill-usage` plugin in `mlarkin00/plugins`. That separation is intentional: plugin machinery here made the repo a poor place to author skills.
+This directory contains **skills and skill-authoring tooling only**. Usage tracking lives in the separate `skill-usage` plugin, by design: plugin machinery mixed into the skills made them a poor thing to author against.
 
 ## Operational Commands
 
@@ -37,25 +37,19 @@ python3 -c "import json;[json.load(open(f)) and print('OK',f) for f in ['.claude
 
 - Each skill MUST live in `skills/<skill-name>/` with a `SKILL.md`, and `skills/` MUST contain **nothing but skill directories**. Antigravity installs every entry there as a skill, so a loose file becomes a phantom skill. `agy plugin validate .` reports the count, so a jump of one is the symptom.
 - Run `gen-readme.sh` after any skill change. The block between `<!-- SKILLS:START -->` and `<!-- SKILLS:END -->` is generated and MUST NOT be hand-edited.
-- **Versions are automatic — do not hand-bump.** `.github/workflows/release.yml` patch-bumps the affected manifest(s) on every push to `main` and tags per runtime. The path→runtime mapping is the whole contract:
-
-  | Changed path | Bumps |
-  |---|---|
-  | `skills/**` | both (`.claude-plugin/plugin.json` + `plugin.json`) |
-  | docs, `scripts/`, `tests/`, `.github/` | nothing |
-
-  This exists because plugin caches are version-keyed: an unbumped change is never delivered, so relying on memory to bump was a silent-failure mode. Extend the mapping when a runtime-specific directory is added.
+- **One version, in all three places.** `.claude-plugin/plugin.json`, `plugin.json`, and the `active-skills` entry in `.claude-plugin/marketplace.json` MUST carry the same version. `sync-active-skills.yml` patch-bumps all three — but **only when its own run dirties something** (a mirrored skill change). A hand edit to anything outside `skills/` (`scripts/`, `hooks.json`, `tests/`, or a manifest) is invisible to the sync, so **bump all three by hand in the same commit**, or the change never ships — caches are version-keyed. `active-skills` is deliberately NOT in `release.yml`; the sync owns it alone.
 
 ## Architecture & Constraints
 
-**This repository is public.** Everything committed here, including history, is world-readable. Before adding files, check for internal paths — a pattern scan for `google3`, `go/`, and `blaze` alone is not sufficient; it missed `/google/bin/...` and internal proto paths such as `learning/gemini/...` elsewhere in this codebase.
+**This repository is public.** Everything committed here, including history, is world-readable. Skills arrive by sync from `mlarkin00/active-skills`, so the internal-path scan belongs there — a pattern scan for `google3`, `go/`, and `blaze` alone is not sufficient; it missed `/google/bin/...` and internal proto paths such as `learning/gemini/...` elsewhere in this codebase.
 
 **Do not add usage-tracking code here.** It belongs in `skill-usage`. Counts are personal telemetry and must never be committed to a public repo; `skill-usage.json` is gitignored as a backstop.
 
-**Expect the remote to move under you.** `release.yml` commits a version bump on top of your push, so a follow-up push can be rejected. Rebase, never force.
+**Expect the remote to move under you.** `sync-active-skills.yml` commits a version bump on top of your push, so a follow-up push can be rejected. Rebase, never force.
 
 **Never:**
 - Put a non-skill file directly under `skills/`
+- Hand-edit `skills/` — it is the rsync mirror of `mlarkin00/active-skills` and is overwritten on the next sync
 - Hand-edit the generated skill inventory in `README.md`
-- Hand-bump a manifest `version` — `release.yml` owns it, and a manual bump races the bot
+- Skip the hand bump when you edit outside `skills/` — the sync won't do it for you
 - Commit usage counts

@@ -1,10 +1,10 @@
 # active-skills
 
-A curated set of agent skills, installable as a plugin in both Claude Code and Antigravity. **This repository is the source of truth — clone it to author skills.** The [`mlarkin00/plugins`](https://github.com/mlarkin00/plugins) marketplace mirrors it automatically, so users install everything from that one place and never clone this repo.
+A curated set of agent skills, installable as a plugin in both Claude Code and Antigravity. This directory is the plugin as it ships in the [`mlarkin00/plugins`](https://github.com/mlarkin00/plugins) marketplace — the one place users install from. The skills under `skills/` are **authored in [`mlarkin00/active-skills`](https://github.com/mlarkin00/active-skills)** and mirrored here by the `sync-active-skills.yml` workflow, so don't edit `skills/` in this repo — the next sync overwrites it.
 
-The repository root *is* the plugin. Claude Code reads `.claude-plugin/plugin.json`; Antigravity reads `plugin.json`. The two manifests coexist and each carries its own version, so one directory serves both runtimes.
+One directory serves both runtimes: Claude Code reads `.claude-plugin/plugin.json`, Antigravity reads `plugin.json`, and both carry the **same** version as the `marketplace.json` entry.
 
-Everything here is skills or skill-authoring tooling. Usage tracking lives in a separate `skill-usage` plugin, deliberately: keeping plugin machinery out of this repo keeps it a clean place to write skills.
+Everything here is skills or skill-authoring tooling. Usage tracking lives in a separate `skill-usage` plugin, deliberately — keeping telemetry machinery out of the skills keeps them clean.
 
 ## Install
 
@@ -26,19 +26,21 @@ agy plugin install ./plugins
 
 Pointing `agy plugin install` at a directory holding several plugins reports `Found bulk plugins directory` and installs them all, this one included. Antigravity reads Claude-format plugins natively, so one clone covers every plugin in the marketplace.
 
-## Authoring
+## How skills get here
 
-Each skill is a directory under `skills/` containing a `SKILL.md`. That is the whole contract — `skills/` must contain **nothing but skill directories**, because Antigravity installs every entry there as a skill and a loose file becomes a phantom skill in its UI.
+Skills are authored in [`mlarkin00/active-skills`](https://github.com/mlarkin00/active-skills), not here. Each is a directory under `skills/` containing a `SKILL.md`, and `skills/` must contain **nothing but skill directories** — Antigravity installs every entry there as a skill, so a loose file becomes a phantom skill in its UI.
 
-After adding, removing, or retitling a skill, regenerate the inventory below:
+A push to the authoring repo dispatches the `sync-active-skills.yml` workflow in this repo. It rsyncs the skills into `skills/`, regenerates the inventory below, and patch-bumps the version. To regenerate the inventory by hand after editing this file:
 
 ```bash
 bash scripts/gen-readme.sh
 ```
 
-To publish: **just push to `main`.** A release workflow patch-bumps the affected manifest(s) and tags the release — a change under `skills/` bumps both runtimes, and docs or tooling bump nothing. Don't hand-edit a `version`; the bot owns it.
+## Versioning
 
-That bump is then what ships: a sync workflow in `mlarkin00/plugins` mirrors the change into the marketplace and restamps its `marketplace.json`. The version is what matters, because plugin caches are version-keyed — which is exactly why bumping is automated rather than left to memory.
+The plugin carries **one** version, identical in all three places: `.claude-plugin/plugin.json`, `plugin.json`, and the `active-skills` entry in the marketplace's `.claude-plugin/marketplace.json`. Caches are version-keyed, so an unbumped change is never delivered.
+
+`sync-active-skills.yml` bumps all three automatically — but **only when its own run dirties something** (a mirrored skill change). A hand edit to anything outside `skills/` (the `scripts/`, `hooks.json`, `tests/`, or either manifest) is invisible to the sync, so bump all three by hand in the same commit. `active-skills` is deliberately **not** in `release.yml`; the sync owns it alone.
 
 ## Layout
 
