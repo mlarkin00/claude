@@ -4,6 +4,7 @@
 
 # Pitfall
 
+* [Hook output protocols differ between runtimes](hook-output-protocols.md) - Claude Code injects via plain stdout or hookSpecificOutput.additionalContext, Antigravity via injectSteps[].ephemeralMessage; emitting the wrong shape exits 0 and injects nothing.
 * [Hook payload keys differ in case between runtimes](payload-key-casing.md) - Claude Code sends snake_case, Antigravity sends protojson camelCase; a shared hook script must read both or it silently no-ops on one runtime.
 
 # Runtime Behaviour
