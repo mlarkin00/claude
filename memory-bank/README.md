@@ -42,18 +42,24 @@ claude plugin marketplace add mlarkin00/plugins
 ### 2. Install
 
 ```bash
-claude plugin install memory-bank
+claude plugin install memory-bank@mlarkin00-plugins
 ```
+
+The marketplace qualifier is required — a bare name exits "Plugin not found".
+On Antigravity, clone the marketplace repo and `agy plugin install <clone>`.
 
 ### 3. Bootstrap
 
-Run the bootstrap agent to verify the GCP engine and wire symlinks:
+Ask any session to "set up memory bank", which triggers the `bootstrap-memory-bank`
+skill: it verifies ADC, creates or confirms the reasoning engine, writes a new
+engine ID back to the manifest, and confirms context loads. Or run the script:
 
-```
-/agents run memory-bank:bootstrap-memory-bank
+```bash
+python3 ~/.claude/scripts/memory-bank/bootstrap.py              # setup
+python3 ~/.claude/scripts/memory-bank/bootstrap.py --import-cc  # setup + import
 ```
 
-This is idempotent — safe to re-run.
+Either way it is idempotent — safe to re-run.
 
 ---
 
@@ -63,10 +69,9 @@ This is idempotent — safe to re-run.
 memory-bank/
 ├── .claude-plugin/
 │   └── plugin.json              manifest + GCP config (project, location, engine ID)
-├── agents/
-│   └── bootstrap-memory-bank.md verify engine, update config, import CC memories
 ├── hooks/
-│   └── hooks.json               SessionStart (load) + Stop (save + consolidate)
+│   └── hooks.json               Claude Code: SessionStart (load) + Stop (save + consolidate)
+├── hooks.json                   Antigravity: PreInvocation (load) + Stop (save + consolidate)
 ├── scripts/
 │   ├── config.py                reads .claude-plugin/plugin.json, env-var fallback
 │   ├── resolve_scope.py         user hash (gcloud account) + project hash (git remote)
@@ -79,17 +84,24 @@ memory-bank/
 │   ├── update_memory.py         manual update
 │   ├── delete_memory.py         manual delete
 │   ├── set_project_scope.py     re-scope global → project
+│   ├── bootstrap.py             provisions the engine + writes ID back (idempotent)
 │   ├── create_engine.py         one-time engine provisioning
 │   ├── import_cc_memories.py    import ~/.claude/memory/*.md into GCP
 │   └── install-symlinks.sh      links the scripts into ~/.claude/scripts/memory-bank/
 └── skills/
     ├── memory-bank/             /memory-bank — save a high-priority fact immediately
+    ├── bootstrap-memory-bank/   set up or restore the GCP engine on a machine
     ├── memories-add/            /memories-add — add a fact
+    ├── memories-curate/         /memories-curate — dedup + rewrite (server-side)
     ├── memories-list/           /memories-list — list memories
     ├── memories-update/         /memories-update — update a fact by ID
     ├── memories-delete/         /memories-delete — delete a fact by ID
     └── memories-set-project-scope/  /memories-set-project-scope — narrow global → project
 ```
+
+There is no `agents/` directory. It held `bootstrap-memory-bank` until 0.1.24,
+now the skill and script above: Antigravity installs plugin agents but cannot
+invoke them, so anything a plugin must *do* on both runtimes is a skill or hook.
 
 ---
 
