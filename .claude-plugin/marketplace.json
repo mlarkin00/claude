@@ -9,19 +9,19 @@
       "name": "agent-memory",
       "source": "./agent-memory",
       "description": "GitHub-backed persistent memory for Claude Code. Syncs agent memory across machines via a private Git repository.",
-      "version": "0.3.8"
+      "version": "0.3.9"
     },
     {
       "name": "memory-bank",
       "source": "./memory-bank",
       "description": "GCP-backed long-term memory for Claude Code. Fetches global and project-scoped facts from Vertex AI Reasoning Engine Memory Bank at session start; consolidates new facts at session end.",
-      "version": "0.1.23"
+      "version": "0.1.24"
     },
     {
       "name": "llm-wiki",
       "source": "./llm-wiki",
       "description": "OKF v0.1 knowledge bundle manager. Author, ingest, lint, query, and visualize Open Knowledge Format bundles. Implements the Karpathy LLM-wiki pattern with BigQuery and web ingest adapters.",
-      "version": "0.1.6"
+      "version": "0.1.7"
     },
     {
       "name": "active-skills",
