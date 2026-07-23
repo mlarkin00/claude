@@ -131,9 +131,12 @@ def main():
         parsed = json.loads(out) if out else {}
     except json.JSONDecodeError:
         fail(f"Step 4 verify: load_context.py did not return JSON: {out[:200] or proc.stderr[:200]}")
-    if "injectSteps" in parsed:
-        n = len(parsed["injectSteps"])
-        ok(f"Step 4 verify: context loads ({n} inject step(s); 0 is normal on a fresh engine)")
+    # The loader defaults to Claude Code's SessionStart shape; an empty object is
+    # how it reports "nothing to inject", which is normal on a fresh engine.
+    if parsed == {} or "hookSpecificOutput" in parsed:
+        context = parsed.get("hookSpecificOutput", {}).get("additionalContext", "")
+        n = context.count("<fact>")
+        ok(f"Step 4 verify: context loads ({n} memory/memories; 0 is normal on a fresh engine)")
     else:
         fail(f"Step 4 verify: unexpected output {out[:200]}. Check the engine ID and ADC.")
 

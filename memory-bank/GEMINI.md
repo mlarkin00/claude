@@ -28,7 +28,7 @@ python3 -m unittest discover -s tests -v              # run tests (stdlib unitte
 
 ## Architecture & Constraints
 
-- `load_context.py` → `{"injectSteps": [{"ephemeralMessage": "<long_term_memories>..."}]}`.
+- `load_context.py` → Claude `{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": ...}}` by default; `--format agy` → `{"injectSteps": [{"ephemeralMessage": ...}]}` (passed only by `agy_load_context.py`). Wrong shape = silent no-op; test both.
 - `save_context.py` → Claude Code transcript format: `role: user/assistant`, content as string or list.
 - `sidecar_consolidate.py` → ≤once/24h, walks `~/.claude/projects/**/*.jsonl`.
 - `config.py` → reads `../.claude-plugin/plugin.json` via `os.path.realpath(__file__)` — MUST be `realpath`, not `abspath`; symlinks break `abspath`.

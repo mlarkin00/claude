@@ -1,3 +1,19 @@
+"""Fetch long-term memories and emit them in the calling runtime's hook shape.
+
+The two runtimes inject context through different protocols, and a payload in
+the wrong shape is discarded in silence — the hook still exits 0, so nothing
+surfaces the loss:
+
+  claude (default)  {"hookSpecificOutput": {"hookEventName": "SessionStart",
+                                            "additionalContext": "<xml>"}}
+  agy               {"injectSteps": [{"ephemeralMessage": "<xml>"}]}
+
+Claude Code registers this script directly as its SessionStart hook, so it is
+the default. Antigravity reaches it only through agy_load_context.py, which
+passes --format agy.
+"""
+
+import argparse
 import sys
 import os
 import json
@@ -43,7 +59,25 @@ def query_memory_bank(project, location, engine_id, user_hash, project_hash):
     except Exception:
         return []
 
-def run():
+def render(xml_content, fmt):
+    """Wrap rendered memories in the hook payload `fmt` expects.
+
+    `xml_content` is None when there is nothing to inject.
+    """
+    if fmt == "agy":
+        steps = [{"ephemeralMessage": xml_content}] if xml_content else []
+        return {"injectSteps": steps}
+    if not xml_content:
+        return {}
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": xml_content,
+        }
+    }
+
+
+def run(fmt="claude"):
     try:
         input_data = json.load(sys.stdin)
     except Exception:
@@ -71,7 +105,7 @@ def run():
             facts.append(fact)
 
     if not facts:
-        print(json.dumps({"injectSteps": []}))
+        print(json.dumps(render(None, fmt)))
         return
 
     xml_lines = ["<long_term_memories>"]
@@ -81,11 +115,11 @@ def run():
     xml_lines.append("</long_term_memories>")
     xml_content = "\n".join(xml_lines)
 
-    print(json.dumps({
-        "injectSteps": [
-            {"ephemeralMessage": xml_content}
-        ]
-    }))
+    print(json.dumps(render(xml_content, fmt)))
 
 if __name__ == '__main__':
-    run()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--format', dest='fmt', choices=('claude', 'agy'),
+                        default='claude',
+                        help='hook payload shape to emit (default: claude)')
+    run(parser.parse_args().fmt)

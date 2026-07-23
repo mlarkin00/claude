@@ -8,7 +8,7 @@ Port of the `gcp-memory-bank` Gemini CLI plugin (`~/agent-skills/plugins/memory-
 
 ## How it works
 
-- **SessionStart hook → `load_context.py`**: Queries the GCP Memory Bank for global facts and project-specific facts (scoped by git remote URL). Injects them as an ephemeral `<long_term_memories>` block into the Claude Code context.
+- **SessionStart hook → `load_context.py`**: Queries the GCP Memory Bank for global facts and project-specific facts (scoped by git remote URL). Injects them as a `<long_term_memories>` block into the Claude Code context via `hookSpecificOutput.additionalContext`. Under Antigravity the same loader runs behind `agy_load_context.py`, which requests that runtime's `injectSteps` shape instead.
 - **Stop hook → `save_context.py`**: Reads the session transcript and sends conversation events to the GCP `memories:generate` endpoint for LLM-driven extraction.
 - **Stop hook → `sidecar_consolidate.py`**: Daily job — aggregates all `~/.claude/projects/**/*.jsonl` transcripts, re-runs generation, and deduplicates the memory store.
 

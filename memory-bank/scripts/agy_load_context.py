@@ -19,9 +19,11 @@ in context for the whole conversation at roughly 30ms per turn after the first.
 The cache is refreshed after REFRESH_SECONDS so a long-running conversation
 still picks up memories added part-way through.
 
-Delegates the actual load — load_context.py already emits the exact shape
+Delegates the actual load — `load_context.py --format agy` emits the exact shape
 PreInvocation wants (`{"injectSteps": [{"ephemeralMessage": ...}]}`), so its
-stdout is cached and replayed untouched.
+stdout is cached and replayed untouched. The flag is not optional: the loader
+defaults to Claude Code's `hookSpecificOutput` shape, which Antigravity ignores
+in silence.
 
 Always prints a JSON object and exits 0. A hook must never break the session.
 """
@@ -38,6 +40,7 @@ import time
 
 HERE = os.path.dirname(os.path.realpath(__file__))
 LOADER = os.path.join(HERE, "load_context.py")
+LOADER_ARGS = ["--format", "agy"]
 CACHE_ROOT = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
 STATE_DIR = os.path.join(CACHE_ROOT, "memory-bank", "agy-conversations")
 
@@ -96,7 +99,7 @@ def write_cache(path: str, payload: str) -> None:
 def load(raw: str) -> str:
     try:
         result = subprocess.run(
-            [sys.executable, LOADER],
+            [sys.executable, LOADER, *LOADER_ARGS],
             input=raw,
             capture_output=True,
             text=True,

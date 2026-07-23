@@ -31,7 +31,7 @@ python3 -m unittest discover -s tests -v              # run tests (stdlib unitte
 
 ## Architecture & Constraints
 
-- `load_context.py` outputs `{"injectSteps": [{"ephemeralMessage": "<long_term_memories>..."}]}`.
+- `load_context.py` emits the **caller's** hook shape and defaults to Claude Code's: `{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "<long_term_memories>..."}}`, or `{}` when there is nothing to inject. `--format agy` switches it to `{"injectSteps": [{"ephemeralMessage": ...}]}`, and only `agy_load_context.py` passes it. The wrong shape is injected as nothing while the hook still exits 0, so a change here MUST assert both shapes and that the injected field is non-empty — see `@.agents/wiki/cross-runtime/hook-output-protocols.md`.
 - `save_context.py` handles Claude Code transcript fields: `role: user/assistant`, content as string or list of `{type, text}` blocks.
 - `sidecar_consolidate.py` runs ≤once/24h (`--force` bypasses). Two phases: (1) bulk consolidation — walks `~/.claude/projects/**/*.jsonl` and sends to `memories:generate`; (2) **graduation** — calls `graduate_memories.py` on a weekly rate-limit (`--force-graduate` bypasses independently). It then fires a fail-open `nudge_minion.py`.
 - **Curation (dedup / rewrite / display-name maintenance) is no longer done in this plugin.** It runs server-side on the deployed **memory-minion** agent (GCP Agent Runtime; see the `agentic-minions` repo). `nudge_minion.py` sends a best-effort, fail-open `:query curate` to that agent after client writes (session-end save, `/memories-add`, sidecar consolidation/graduation); the agent's own 6-hour schedule is the guaranteed trigger, so nudge failures never affect the session.
