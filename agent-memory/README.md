@@ -2,7 +2,7 @@
 
 Claude Code plugin that provides GitHub-backed persistent memory across sessions and machines.
 
-Memories written in any Claude Code session are automatically committed and pushed to a private GitHub repo ([agent-memory](https://github.com/mlarkin00/agent-memory)). Every new session pulls the latest state before starting.
+Memories written in any Claude Code session are automatically committed and pushed to a private, per-user GitHub repo (`agent-memory`, created on bootstrap under your own account). Every new session pulls the latest state before starting.
 
 ---
 
@@ -97,7 +97,7 @@ skill or a hook.
 
 ## Memory storage
 
-The memory repo ([agent-memory](https://github.com/mlarkin00/agent-memory)) is cloned to `~/.agents/agent-memory/`. Memory files live at the repo root:
+The memory repo (`agent-memory`, in your own GitHub account) is cloned to `~/.agents/agent-memory/`. Memory files live at the repo root:
 
 ```
 ~/.agents/agent-memory/

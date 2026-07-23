@@ -20,18 +20,7 @@ Per-plugin briefings: `llm-wiki/AGENTS.md`, `memory-bank/AGENTS.md`. Backlog: `.
 ```bash
 # Verify every manifest entry resolves on disk and ALL THREE versions agree
 # (marketplace entry, Claude manifest, Antigravity manifest) — run after any plugin change
-python3 -c "
-import json,os
-m=json.load(open('.claude-plugin/marketplace.json'))
-for p in m['plugins']:
-    s=p['source'].lstrip('./')
-    cf=os.path.join(s,'.claude-plugin','plugin.json'); af=os.path.join(s,'plugin.json')
-    cv=json.load(open(cf))['version'] if os.path.isfile(cf) else None
-    av=json.load(open(af))['version'] if os.path.isfile(af) else '(no agy manifest)'
-    ok = cv==p['version'] and av in (cv,'(no agy manifest)')
-    print(('OK ' if ok else 'BAD'), p['name'], 'mkt='+p['version'], 'claude='+str(cv), 'agy='+av)
-d={x for x in os.listdir('.') if os.path.isdir(os.path.join(x,'.claude-plugin'))}
-print('unlisted on disk:', d-{p['name'] for p in m['plugins']} or 'none')"
+python3 .agents/scripts/check-manifest-versions.py
 
 # Regenerate the active-skills README inventory (CI runs this after every sync)
 bash active-skills/scripts/gen-readme.sh
